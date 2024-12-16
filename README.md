@@ -1,4 +1,5 @@
 # ICM Contracts
+ValidatorManagement contracts for L1, customized by DeraChain.
 
 For help getting started with building ICM contracts, refer to [the avalanche-starter-kit repository](https://github.com/ava-labs/avalanche-starter-kit).
 
