@@ -13,7 +13,9 @@ contracts/validator-manager/ValidatorMessages.sol:ValidatorMessages
 ## 2. NativeTokenStakingManager
 - Command
 ```sh
-forge create --private-key <redacted> --rpc-url <rpc-url> \
+forge create --private-key <redacted> \
+--rpc-url <rpc-url> \
+--constructor-args 0 \
 --libraries contracts/validator-manager/ValidatorMessages.sol:ValidatorMessages:<deployed-address>  \
 contracts/validator-manager/NativeTokenStakingManager.sol:NativeTokenStakingManager
 ```

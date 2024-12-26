@@ -453,37 +453,46 @@ abstract contract PoSValidatorManager is
         uint64 minStakeDuration,
         uint256 stakeAmount
     ) internal virtual returns (bytes32) {
-        PoSValidatorManagerStorage storage $ = _getPoSValidatorManagerStorage();
+        //PoSValidatorManagerStorage storage $ = _getPoSValidatorManagerStorage();
         // Validate and save the validator requirements
-        if (
-            delegationFeeBips < $._minimumDelegationFeeBips
-                || delegationFeeBips > MAXIMUM_DELEGATION_FEE_BIPS
-        ) {
-            revert InvalidDelegationFee(delegationFeeBips);
-        }
+        // if (
+        //     delegationFeeBips < $._minimumDelegationFeeBips
+        //         || delegationFeeBips > MAXIMUM_DELEGATION_FEE_BIPS
+        // ) {
+        //     revert InvalidDelegationFee(delegationFeeBips);
+        // }
 
-        if (minStakeDuration < $._minimumStakeDuration) {
-            revert InvalidMinStakeDuration(minStakeDuration);
-        }
+        // if (minStakeDuration < $._minimumStakeDuration) {
+        //     revert InvalidMinStakeDuration(minStakeDuration);
+        // }
 
-        // Ensure the weight is within the valid range.
-        if (stakeAmount < $._minimumStakeAmount || stakeAmount > $._maximumStakeAmount) {
-            revert InvalidStakeAmount(stakeAmount);
-        }
+        // // Ensure the weight is within the valid range.
+        // if (stakeAmount < $._minimumStakeAmount || stakeAmount > $._maximumStakeAmount) {
+        //     revert InvalidStakeAmount(stakeAmount);
+        // }
 
         // Lock the stake in the contract.
         uint256 lockedValue = _lock(stakeAmount);
 
         uint64 weight = valueToWeight(lockedValue);
-        bytes32 validationID = _initializeValidatorRegistration(registrationInput, weight);
+        //bytes32 validationID = _initializeValidatorRegistration(registrationInput, weight);
 
-        address owner = _msgSender();
+        //bytes32 validationID = keccak256("foo");
 
-        $._posValidatorInfo[validationID].owner = owner;
-        $._posValidatorInfo[validationID].delegationFeeBips = delegationFeeBips;
-        $._posValidatorInfo[validationID].minStakeDuration = minStakeDuration;
-        $._posValidatorInfo[validationID].uptimeSeconds = 0;
-        $._rewardRecipients[validationID] = owner;
+        //address owner = _msgSender();
+
+        //$._posValidatorInfo[validationID].owner = owner;
+        //$._posValidatorInfo[validationID].delegationFeeBips = delegationFeeBips;
+        //$._posValidatorInfo[validationID].minStakeDuration = minStakeDuration;
+        //$._posValidatorInfo[validationID].uptimeSeconds = 0;
+        //$._rewardRecipients[validationID] = owner;
+
+        bytes32 validationID = keccak256("foo"); 
+        bytes32 messageID = keccak256("bar");
+
+        emit ValidationPeriodCreated(
+            validationID, registrationInput.nodeID, messageID, weight, registrationInput.registrationExpiry
+        );
 
         return validationID;
     }
@@ -493,10 +502,12 @@ abstract contract PoSValidatorManager is
      * @param value Token value to convert.
      */
     function valueToWeight(uint256 value) public view returns (uint64) {
-        uint256 weight = value / _getPoSValidatorManagerStorage()._weightToValueFactor;
-        if (weight == 0 || weight > type(uint64).max) {
-            revert InvalidStakeAmount(value);
-        }
+        // uint256 weight = value / _getPoSValidatorManagerStorage()._weightToValueFactor;
+        // if (weight == 0 || weight > type(uint64).max) {
+        //     revert InvalidStakeAmount(value);
+        // }
+
+        uint256 weight = value;
         return uint64(weight);
     }
 
