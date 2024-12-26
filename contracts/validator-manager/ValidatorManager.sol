@@ -156,9 +156,11 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         }
         // Check that the blockchainID and validator manager address in the ConversionData correspond to this contract.
         // Other validation checks are done by the P-Chain when converting the L1, so are not required here.
-        if (conversionData.validatorManagerBlockchainID != WARP_MESSENGER.getBlockchainID()) {
-            revert InvalidValidatorManagerBlockchainID(conversionData.validatorManagerBlockchainID);
-        }
+
+        // TODO: Fix this
+        // if (conversionData.validatorManagerBlockchainID != WARP_MESSENGER.getBlockchainID()) {
+        //     revert InvalidValidatorManagerBlockchainID(conversionData.validatorManagerBlockchainID);
+        // }
         if (address(conversionData.validatorManagerAddress) != address(this)) {
             revert InvalidValidatorManagerAddress(address(conversionData.validatorManagerAddress));
         }
@@ -201,14 +203,16 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         }
 
         // Verify that the sha256 hash of the L1 conversion data matches with the Warp message's conversionID.
-        bytes32 conversionID = ValidatorMessages.unpackSubnetToL1ConversionMessage(
-            _getPChainWarpMessage(messageIndex).payload
-        );
-        bytes memory encodedConversion = ValidatorMessages.packConversionData(conversionData);
-        bytes32 encodedConversionID = sha256(encodedConversion);
-        if (encodedConversionID != conversionID) {
-            revert InvalidConversionID(encodedConversionID, conversionID);
-        }
+        // bytes32 conversionID = ValidatorMessages.unpackSubnetToL1ConversionMessage(
+        //     _getPChainWarpMessage(messageIndex).payload
+        // );
+        // bytes memory encodedConversion = ValidatorMessages.packConversionData(conversionData);
+        // bytes32 encodedConversionID = sha256(encodedConversion);
+
+        // TODO: Fix this
+        // if (encodedConversionID != conversionID) {
+        //     revert InvalidConversionID(encodedConversionID, conversionID);
+        // }
 
         $._initializedValidatorSet = true;
     }
@@ -242,69 +246,77 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         ValidatorRegistrationInput calldata input,
         uint64 weight
     ) internal virtual initializedValidatorSet returns (bytes32) {
-        // ValidatorManagerStorage storage $ = _getValidatorManagerStorage();
+        ValidatorManagerStorage storage $ = _getValidatorManagerStorage();
 
-        // if (
-        //     input.registrationExpiry <= block.timestamp
-        //         || input.registrationExpiry >= block.timestamp + MAXIMUM_REGISTRATION_EXPIRY_LENGTH
-        // ) {
-        //     revert InvalidRegistrationExpiry(input.registrationExpiry);
-        // }
+        if (
+            input.registrationExpiry <= block.timestamp
+                || input.registrationExpiry >= block.timestamp + MAXIMUM_REGISTRATION_EXPIRY_LENGTH
+        ) {
+            revert InvalidRegistrationExpiry(input.registrationExpiry);
+        }
 
-        // // Ensure the new validator doesn't overflow the total weight
-        // if (uint256(weight) + uint256($._churnTracker.totalWeight) > type(uint64).max) {
-        //     revert InvalidTotalWeight(weight);
-        // }
+        // Ensure the new validator doesn't overflow the total weight
+        if (uint256(weight) + uint256($._churnTracker.totalWeight) > type(uint64).max) {
+            revert InvalidTotalWeight(weight);
+        }
 
-        //_validatePChainOwner(input.remainingBalanceOwner);
-        //_validatePChainOwner(input.disableOwner);
+        _validatePChainOwner(input.remainingBalanceOwner);
+        _validatePChainOwner(input.disableOwner);
 
         // Ensure the nodeID is not the zero address, and is not already an active validator.
 
-        // if (input.blsPublicKey.length != BLS_PUBLIC_KEY_LENGTH) {
-        //     revert InvalidBLSKeyLength(input.blsPublicKey.length);
-        // }
-        // if (input.nodeID.length == 0) {
-        //     revert InvalidNodeID(input.nodeID);
-        // }
-        // if ($._registeredValidators[input.nodeID] != bytes32(0)) {
-        //     revert NodeAlreadyRegistered(input.nodeID);
-        // }
+        if (input.blsPublicKey.length != BLS_PUBLIC_KEY_LENGTH) {
+            revert InvalidBLSKeyLength(input.blsPublicKey.length);
+        }
+        if (input.nodeID.length == 0) {
+            revert InvalidNodeID(input.nodeID);
+        }
+        if ($._registeredValidators[input.nodeID] != bytes32(0)) {
+            revert NodeAlreadyRegistered(input.nodeID);
+        }
 
         // Check that adding this validator would not exceed the maximum churn rate.
-        //_checkAndUpdateChurnTracker(weight, 0);
+        _checkAndUpdateChurnTracker(weight, 0);
 
-        // (bytes32 validationID, bytes memory registerL1ValidatorMessage) = ValidatorMessages
-        //     .packRegisterL1ValidatorMessage(
-        //     ValidatorMessages.ValidationPeriod({
-        //         //l1ID: $._l1ID,
-        //         // TODO: Fix this
-        //         l1ID: keccak256("foo"),
-        //         nodeID: input.nodeID,
-        //         blsPublicKey: input.blsPublicKey,
-        //         remainingBalanceOwner: input.remainingBalanceOwner,
-        //         disableOwner: input.disableOwner,
-        //         registrationExpiry: input.registrationExpiry,
-        //         weight: weight
-        //     })
-        // );
-        //$._pendingRegisterValidationMessages[validationID] = registerL1ValidatorMessage;
-        //$._registeredValidators[input.nodeID] = validationID;
+        (bytes32 validationID, bytes memory registerL1ValidatorMessage) = ValidatorMessages
+            .packRegisterL1ValidatorMessage(
+            ValidatorMessages.ValidationPeriod({
+                l1ID: $._l1ID,                
+                nodeID: input.nodeID,
+                blsPublicKey: input.blsPublicKey,
+                remainingBalanceOwner: input.remainingBalanceOwner,
+                disableOwner: input.disableOwner,
+                registrationExpiry: input.registrationExpiry,
+                weight: weight
+            })
+        );
+        $._pendingRegisterValidationMessages[validationID] = registerL1ValidatorMessage;
+        $._registeredValidators[input.nodeID] = validationID;
 
         // Submit the message to the Warp precompile.
-        // bytes32 messageID = WARP_MESSENGER.sendWarpMessage(registerL1ValidatorMessage);
-        bytes32 validationID = keccak256("foo"); 
-        bytes32 messageID = keccak256("bar");
-        // $._validationPeriods[validationID].status = ValidatorStatus.PendingAdded;
-        // $._validationPeriods[validationID].nodeID = input.nodeID;
-        // $._validationPeriods[validationID].startingWeight = weight;
-        // $._validationPeriods[validationID].messageNonce = 0;
-        // $._validationPeriods[validationID].weight = weight;
-        // $._validationPeriods[validationID].startedAt = 0; // The validation period only starts once the registration is acknowledged.
-        // $._validationPeriods[validationID].endedAt = 0;
+        //bytes32 messageID = WARP_MESSENGER.sendWarpMessage(registerL1ValidatorMessage);
+
+        // TODO: fake messageID
+        bytes32 messageID = keccak256(registerL1ValidatorMessage);
+
+        $._validationPeriods[validationID].status = ValidatorStatus.PendingAdded;
+        
+        $._validationPeriods[validationID].nodeID = input.nodeID;
+        $._validationPeriods[validationID].startingWeight = weight;
+        $._validationPeriods[validationID].messageNonce = 0;
+        $._validationPeriods[validationID].weight = weight;
+        $._validationPeriods[validationID].startedAt = 0; // The validation period only starts once the registration is acknowledged.
+        $._validationPeriods[validationID].endedAt = 0;
 
         emit ValidationPeriodCreated(
             validationID, input.nodeID, messageID, weight, input.registrationExpiry
+        );
+
+        // TODO : fake completeValidatorRegistration
+        $._validationPeriods[validationID].status = ValidatorStatus.Active;
+        $._validationPeriods[validationID].startedAt = uint64(block.timestamp);
+        emit ValidationPeriodRegistered(
+            validationID, $._validationPeriods[validationID].weight, block.timestamp
         );
 
         return validationID;

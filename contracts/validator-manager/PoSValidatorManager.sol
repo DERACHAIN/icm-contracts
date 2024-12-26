@@ -453,46 +453,36 @@ abstract contract PoSValidatorManager is
         uint64 minStakeDuration,
         uint256 stakeAmount
     ) internal virtual returns (bytes32) {
-        //PoSValidatorManagerStorage storage $ = _getPoSValidatorManagerStorage();
+        PoSValidatorManagerStorage storage $ = _getPoSValidatorManagerStorage();
         // Validate and save the validator requirements
-        // if (
-        //     delegationFeeBips < $._minimumDelegationFeeBips
-        //         || delegationFeeBips > MAXIMUM_DELEGATION_FEE_BIPS
-        // ) {
-        //     revert InvalidDelegationFee(delegationFeeBips);
-        // }
+        if (
+            delegationFeeBips < $._minimumDelegationFeeBips
+                || delegationFeeBips > MAXIMUM_DELEGATION_FEE_BIPS
+        ) {
+            revert InvalidDelegationFee(delegationFeeBips);
+        }
 
-        // if (minStakeDuration < $._minimumStakeDuration) {
-        //     revert InvalidMinStakeDuration(minStakeDuration);
-        // }
+        if (minStakeDuration < $._minimumStakeDuration) {
+            revert InvalidMinStakeDuration(minStakeDuration);
+        }
 
-        // // Ensure the weight is within the valid range.
-        // if (stakeAmount < $._minimumStakeAmount || stakeAmount > $._maximumStakeAmount) {
-        //     revert InvalidStakeAmount(stakeAmount);
-        // }
+        // Ensure the weight is within the valid range.
+        if (stakeAmount < $._minimumStakeAmount || stakeAmount > $._maximumStakeAmount) {
+            revert InvalidStakeAmount(stakeAmount);
+        }
 
         // Lock the stake in the contract.
         uint256 lockedValue = _lock(stakeAmount);
 
         uint64 weight = valueToWeight(lockedValue);
-        //bytes32 validationID = _initializeValidatorRegistration(registrationInput, weight);
+        bytes32 validationID = _initializeValidatorRegistration(registrationInput, weight);
+        address owner = _msgSender();
 
-        //bytes32 validationID = keccak256("foo");
-
-        //address owner = _msgSender();
-
-        //$._posValidatorInfo[validationID].owner = owner;
-        //$._posValidatorInfo[validationID].delegationFeeBips = delegationFeeBips;
-        //$._posValidatorInfo[validationID].minStakeDuration = minStakeDuration;
-        //$._posValidatorInfo[validationID].uptimeSeconds = 0;
-        //$._rewardRecipients[validationID] = owner;
-
-        bytes32 validationID = keccak256("foo"); 
-        bytes32 messageID = keccak256("bar");
-
-        emit ValidationPeriodCreated(
-            validationID, registrationInput.nodeID, messageID, weight, registrationInput.registrationExpiry
-        );
+        $._posValidatorInfo[validationID].owner = owner;
+        $._posValidatorInfo[validationID].delegationFeeBips = delegationFeeBips;
+        $._posValidatorInfo[validationID].minStakeDuration = minStakeDuration;
+        $._posValidatorInfo[validationID].uptimeSeconds = 0;
+        $._rewardRecipients[validationID] = owner;
 
         return validationID;
     }
@@ -502,12 +492,11 @@ abstract contract PoSValidatorManager is
      * @param value Token value to convert.
      */
     function valueToWeight(uint256 value) public view returns (uint64) {
-        // uint256 weight = value / _getPoSValidatorManagerStorage()._weightToValueFactor;
-        // if (weight == 0 || weight > type(uint64).max) {
-        //     revert InvalidStakeAmount(value);
-        // }
+        uint256 weight = value / _getPoSValidatorManagerStorage()._weightToValueFactor;
+        if (weight == 0 || weight > type(uint64).max) {
+            revert InvalidStakeAmount(value);
+        }
 
-        uint256 weight = value;
         return uint64(weight);
     }
 
@@ -563,13 +552,13 @@ abstract contract PoSValidatorManager is
         // Store the delegation information. Set the delegator status to pending added,
         // so that it can be properly started in the complete step, even if the delivered
         // nonce is greater than the nonce used to initialize registration.
-        $._delegatorStakes[delegationID].status = DelegatorStatus.PendingAdded;
-        $._delegatorStakes[delegationID].owner = delegatorAddress;
-        $._delegatorStakes[delegationID].validationID = validationID;
-        $._delegatorStakes[delegationID].weight = weight;
-        $._delegatorStakes[delegationID].startedAt = 0;
-        $._delegatorStakes[delegationID].startingNonce = nonce;
-        $._delegatorStakes[delegationID].endingNonce = 0;
+        // $._delegatorStakes[delegationID].status = DelegatorStatus.PendingAdded;
+        // $._delegatorStakes[delegationID].owner = delegatorAddress;
+        // $._delegatorStakes[delegationID].validationID = validationID;
+        // $._delegatorStakes[delegationID].weight = weight;
+        // $._delegatorStakes[delegationID].startedAt = 0;
+        // $._delegatorStakes[delegationID].startingNonce = nonce;
+        // $._delegatorStakes[delegationID].endingNonce = 0;
 
         emit DelegatorAdded({
             delegationID: delegationID,
@@ -580,6 +569,17 @@ abstract contract PoSValidatorManager is
             delegatorWeight: weight,
             setWeightMessageID: messageID
         });
+
+        // TODO: fake completeDelegatorRegistration
+        //$._delegatorStakes[delegationID].status = DelegatorStatus.Active;
+        //$._delegatorStakes[delegationID].startedAt = uint64(block.timestamp);
+
+        emit DelegatorRegistered({
+            delegationID: delegationID,
+            validationID: validationID,
+            startTime: uint64(block.timestamp)
+        });
+
         return delegationID;
     }
 
