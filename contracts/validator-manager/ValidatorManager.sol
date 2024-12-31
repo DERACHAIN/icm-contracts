@@ -59,7 +59,7 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
     bytes32 public constant VALIDATOR_MANAGER_STORAGE_LOCATION =
         0xe92546d698950ddd38910d2e15ed1d923cd0a7b3dde9e2a6a3f380565559cb00;
 
-    uint8 public constant MAXIMUM_CHURN_PERCENTAGE_LIMIT = 20;
+    uint8 public constant MAXIMUM_CHURN_PERCENTAGE_LIMIT = 100;
     uint64 public constant MAXIMUM_REGISTRATION_EXPIRY_LENGTH = 2 days;
     uint32 public constant ADDRESS_LENGTH = 20; // This is only used as a packed uint32
     uint8 public constant BLS_PUBLIC_KEY_LENGTH = 48;
@@ -256,9 +256,10 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         }
 
         // Ensure the new validator doesn't overflow the total weight
-        if (uint256(weight) + uint256($._churnTracker.totalWeight) > type(uint64).max) {
-            revert InvalidTotalWeight(weight);
-        }
+        // TODO: unlimit
+        // if (uint256(weight) + uint256($._churnTracker.totalWeight) > type(uint64).max) {
+        //     revert InvalidTotalWeight(weight);
+        // }
 
         _validatePChainOwner(input.remainingBalanceOwner);
         _validatePChainOwner(input.disableOwner);
@@ -276,7 +277,8 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         }
 
         // Check that adding this validator would not exceed the maximum churn rate.
-        _checkAndUpdateChurnTracker(weight, 0);
+        // TODO: unlimit
+        //_checkAndUpdateChurnTracker(weight, 0);
 
         (bytes32 validationID, bytes memory registerL1ValidatorMessage) = ValidatorMessages
             .packRegisterL1ValidatorMessage(
@@ -524,7 +526,8 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         uint64 validatorWeight = $._validationPeriods[validationID].weight;
 
         // Check that changing the validator weight would not exceed the maximum churn rate.
-        _checkAndUpdateChurnTracker(newWeight, validatorWeight);
+        // TODO: unlimit
+        //_checkAndUpdateChurnTracker(newWeight, validatorWeight);
 
         uint64 nonce = _incrementAndGetNonce(validationID);
 

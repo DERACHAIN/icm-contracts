@@ -340,12 +340,13 @@ abstract contract PoSValidatorManager is
         }
 
         // Check that minimum stake duration has passed.
-        if (
-            validator.endedAt
-                < validator.startedAt + $._posValidatorInfo[validationID].minStakeDuration
-        ) {
-            revert MinStakeDurationNotPassed(validator.endedAt);
-        }
+        // TODO: fix it
+        // if (
+        //     validator.endedAt
+        //         < validator.startedAt + $._posValidatorInfo[validationID].minStakeDuration
+        // ) {
+        //     revert MinStakeDurationNotPassed(validator.endedAt);
+        // }
 
         // Uptime proofs include the absolute number of seconds the validator has been active.
         uint64 uptimeSeconds;
@@ -370,7 +371,14 @@ abstract contract PoSValidatorManager is
         $._redeemableValidatorRewards[validationID] += reward;
         $._rewardRecipients[validationID] = rewardRecipient;
 
-        return (reward > 0);
+        // TODO: fake completeEndValidation
+        // Emit event.
+        emit ValidationPeriodEnded(validationID, ValidatorStatus.Completed);
+
+        // The stake is unlocked whether the validation period is completed or invalidated.
+        _unlock($._posValidatorInfo[validationID].owner, weightToValue(validator.startingWeight));
+
+        return (reward > 0) || true; // TODO
     }
 
     /**
@@ -552,13 +560,13 @@ abstract contract PoSValidatorManager is
         // Store the delegation information. Set the delegator status to pending added,
         // so that it can be properly started in the complete step, even if the delivered
         // nonce is greater than the nonce used to initialize registration.
-        // $._delegatorStakes[delegationID].status = DelegatorStatus.PendingAdded;
-        // $._delegatorStakes[delegationID].owner = delegatorAddress;
-        // $._delegatorStakes[delegationID].validationID = validationID;
-        // $._delegatorStakes[delegationID].weight = weight;
-        // $._delegatorStakes[delegationID].startedAt = 0;
-        // $._delegatorStakes[delegationID].startingNonce = nonce;
-        // $._delegatorStakes[delegationID].endingNonce = 0;
+        $._delegatorStakes[delegationID].status = DelegatorStatus.PendingAdded;
+        $._delegatorStakes[delegationID].owner = delegatorAddress;
+        $._delegatorStakes[delegationID].validationID = validationID;
+        $._delegatorStakes[delegationID].weight = weight;
+        $._delegatorStakes[delegationID].startedAt = 0;
+        $._delegatorStakes[delegationID].startingNonce = nonce;
+        $._delegatorStakes[delegationID].endingNonce = 0;
 
         emit DelegatorAdded({
             delegationID: delegationID,
@@ -571,8 +579,8 @@ abstract contract PoSValidatorManager is
         });
 
         // TODO: fake completeDelegatorRegistration
-        //$._delegatorStakes[delegationID].status = DelegatorStatus.Active;
-        //$._delegatorStakes[delegationID].startedAt = uint64(block.timestamp);
+        $._delegatorStakes[delegationID].status = DelegatorStatus.Active;
+        $._delegatorStakes[delegationID].startedAt = uint64(block.timestamp);
 
         emit DelegatorRegistered({
             delegationID: delegationID,
@@ -739,9 +747,10 @@ abstract contract PoSValidatorManager is
 
         if (validator.status == ValidatorStatus.Active) {
             // Check that minimum stake duration has passed.
-            if (block.timestamp < delegator.startedAt + $._minimumStakeDuration) {
-                revert MinStakeDurationNotPassed(uint64(block.timestamp));
-            }
+            // TODO: fix it
+            // if (block.timestamp < delegator.startedAt + $._minimumStakeDuration) {
+            //     revert MinStakeDurationNotPassed(uint64(block.timestamp));
+            // }
 
             if (includeUptimeProof) {
                 // Uptime proofs include the absolute number of seconds the validator has been active.
@@ -763,7 +772,11 @@ abstract contract PoSValidatorManager is
                 delegationID: delegationID,
                 validationID: validationID
             });
-            return (reward > 0);
+
+            // TODO: fake completeEndDelegation
+            emit DelegationEnded(delegationID, validationID, 0, 0);
+
+            return (reward > 0) || true; // TODO
         } else if (validator.status == ValidatorStatus.Completed) {
             _calculateAndSetDelegationReward(delegator, rewardRecipient, delegationID);
             _completeEndDelegation(delegationID);
