@@ -248,12 +248,12 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
     ) internal virtual initializedValidatorSet returns (bytes32) {
         ValidatorManagerStorage storage $ = _getValidatorManagerStorage();
 
-        if (
-            input.registrationExpiry <= block.timestamp
-                || input.registrationExpiry >= block.timestamp + MAXIMUM_REGISTRATION_EXPIRY_LENGTH
-        ) {
-            revert InvalidRegistrationExpiry(input.registrationExpiry);
-        }
+        // if (
+        //     input.registrationExpiry <= block.timestamp
+        //         || input.registrationExpiry >= block.timestamp + MAXIMUM_REGISTRATION_EXPIRY_LENGTH
+        // ) {
+        //     revert InvalidRegistrationExpiry(input.registrationExpiry);
+        // }
 
         // Ensure the new validator doesn't overflow the total weight
         // TODO: unlimit
@@ -261,8 +261,8 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         //     revert InvalidTotalWeight(weight);
         // }
 
-        _validatePChainOwner(input.remainingBalanceOwner);
-        _validatePChainOwner(input.disableOwner);
+        //_validatePChainOwner(input.remainingBalanceOwner);
+        //_validatePChainOwner(input.disableOwner);
 
         // Ensure the nodeID is not the zero address, and is not already an active validator.
 
@@ -280,26 +280,27 @@ abstract contract ValidatorManager is Initializable, ContextUpgradeable, IValida
         // TODO: unlimit
         //_checkAndUpdateChurnTracker(weight, 0);
 
-        (bytes32 validationID, bytes memory registerL1ValidatorMessage) = ValidatorMessages
-            .packRegisterL1ValidatorMessage(
-            ValidatorMessages.ValidationPeriod({
-                l1ID: $._l1ID,                
-                nodeID: input.nodeID,
-                blsPublicKey: input.blsPublicKey,
-                remainingBalanceOwner: input.remainingBalanceOwner,
-                disableOwner: input.disableOwner,
-                registrationExpiry: input.registrationExpiry,
-                weight: weight
-            })
-        );
-        $._pendingRegisterValidationMessages[validationID] = registerL1ValidatorMessage;
-        $._registeredValidators[input.nodeID] = validationID;
+        // (bytes32 validationID, bytes memory registerL1ValidatorMessage) = ValidatorMessages
+        //     .packRegisterL1ValidatorMessage(
+        //     ValidatorMessages.ValidationPeriod({
+        //         l1ID: $._l1ID,                
+        //         nodeID: input.nodeID,
+        //         blsPublicKey: input.blsPublicKey,
+        //         remainingBalanceOwner: input.remainingBalanceOwner,
+        //         disableOwner: input.disableOwner,
+        //         registrationExpiry: input.registrationExpiry,
+        //         weight: weight
+        //     })
+        // );
+        // $._pendingRegisterValidationMessages[validationID] = registerL1ValidatorMessage;
+        // $._registeredValidators[input.nodeID] = validationID;
 
         // Submit the message to the Warp precompile.
         //bytes32 messageID = WARP_MESSENGER.sendWarpMessage(registerL1ValidatorMessage);
 
         // TODO: fake messageID
-        bytes32 messageID = keccak256(registerL1ValidatorMessage);
+        bytes32 validationID = keccak256(abi.encodePacked(block.timestamp));
+        bytes32 messageID = keccak256(abi.encodePacked(validationID));
 
         $._validationPeriods[validationID].status = ValidatorStatus.PendingAdded;
         

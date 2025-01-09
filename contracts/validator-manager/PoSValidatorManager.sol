@@ -475,9 +475,9 @@ abstract contract PoSValidatorManager is
         }
 
         // Ensure the weight is within the valid range.
-        if (stakeAmount < $._minimumStakeAmount || stakeAmount > $._maximumStakeAmount) {
-            revert InvalidStakeAmount(stakeAmount);
-        }
+        // if (stakeAmount < $._minimumStakeAmount || stakeAmount > $._maximumStakeAmount) {
+        //     revert InvalidStakeAmount(stakeAmount);
+        // }
 
         // Lock the stake in the contract.
         uint256 lockedValue = _lock(stakeAmount);
@@ -731,19 +731,19 @@ abstract contract PoSValidatorManager is
         }
 
         // Only the delegation owner or parent validator can end the delegation.
-        if (delegator.owner != _msgSender()) {
-            // Validators can only remove delegations after the minimum stake duration has passed.
-            if ($._posValidatorInfo[validationID].owner != _msgSender()) {
-                revert UnauthorizedOwner(_msgSender());
-            }
+        // if (delegator.owner != _msgSender()) {
+        //     // Validators can only remove delegations after the minimum stake duration has passed.
+        //     if ($._posValidatorInfo[validationID].owner != _msgSender()) {
+        //         revert UnauthorizedOwner(_msgSender());
+        //     }
 
-            if (
-                block.timestamp
-                    < validator.startedAt + $._posValidatorInfo[validationID].minStakeDuration
-            ) {
-                revert MinStakeDurationNotPassed(uint64(block.timestamp));
-            }
-        }
+        //     if (
+        //         block.timestamp
+        //             < validator.startedAt + $._posValidatorInfo[validationID].minStakeDuration
+        //     ) {
+        //         revert MinStakeDurationNotPassed(uint64(block.timestamp));
+        //     }
+        // }
 
         if (validator.status == ValidatorStatus.Active) {
             // Check that minimum stake duration has passed.
@@ -760,13 +760,13 @@ abstract contract PoSValidatorManager is
             // Set the delegator status to pending removed, so that it can be properly removed in
             // the complete step, even if the delivered nonce is greater than the nonce used to
             // initialize the removal.
-            $._delegatorStakes[delegationID].status = DelegatorStatus.PendingRemoved;
+            //$._delegatorStakes[delegationID].status = DelegatorStatus.PendingRemoved;
 
-            ($._delegatorStakes[delegationID].endingNonce,) =
-                _setValidatorWeight(validationID, validator.weight - delegator.weight);
+            // ($._delegatorStakes[delegationID].endingNonce,) =
+            //     _setValidatorWeight(validationID, validator.weight - delegator.weight);
 
-            uint256 reward =
-                _calculateAndSetDelegationReward(delegator, rewardRecipient, delegationID);
+            // uint256 reward =
+            //     _calculateAndSetDelegationReward(delegator, rewardRecipient, delegationID);
 
             emit DelegatorRemovalInitialized({
                 delegationID: delegationID,
@@ -776,12 +776,17 @@ abstract contract PoSValidatorManager is
             // TODO: fake completeEndDelegation
             emit DelegationEnded(delegationID, validationID, 0, 0);
 
-            return (reward > 0) || true; // TODO
+            //return (reward > 0) || true; // TODO
+            return true;
         } else if (validator.status == ValidatorStatus.Completed) {
-            _calculateAndSetDelegationReward(delegator, rewardRecipient, delegationID);
-            _completeEndDelegation(delegationID);
+            //_calculateAndSetDelegationReward(delegator, rewardRecipient, delegationID);
+            //_completeEndDelegation(delegationID);
             // If the validator has completed, then no further uptimes may be submitted, so we always
             // end the delegation.
+
+            // TODO: fake completeEndDelegation
+            emit DelegationEnded(delegationID, validationID, 0, 0);
+
             return true;
         } else {
             revert InvalidValidatorStatus(validator.status);
