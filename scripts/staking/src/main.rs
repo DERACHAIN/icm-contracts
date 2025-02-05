@@ -10,6 +10,9 @@ use serde::Deserialize;
 use config::{Config, Environment, File};
 use std::error:: Error;
 
+use dotenv::dotenv;
+use std::env;
+
 #[derive(Debug, Deserialize)]
 struct Settings {
     rpc_url: String,
@@ -29,13 +32,18 @@ fn load_config() -> Result<Settings, Box<dyn Error>> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let settings = load_config()?;
-    println!("RPC URL: {}", settings.rpc_url);
+    dotenv().ok();
 
-    let provider = Provider::<Http>::try_from(settings.rpc_url)?;
+    let rpc_url = env::var("RPC_URL")?;
+    let proxy_admin_addres = env::var("PROXY_ADMIN_ADDRESS")?;
+    let proxy_address = env::var("PROXY_ADDRESS")?;
+
+    let settings = load_config()?;
+
+    let provider = Provider::<Http>::try_from(rpc_url)?;
     let client = Arc::new(provider);
 
-    let contract_address: Address = settings.proxy_admin_address.parse()?;
+    let contract_address: Address = proxy_admin_addres.parse()?;
 
     let abi: Abi = serde_json::from_str(include_str!("../abis/proxy-admin.abi.json"))?;
 
@@ -44,8 +52,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let owner: Address = contract.method("owner", ())?.call().await?;
     println!("The owner address: {:?}", owner);
 
-
-    let proxy_address: Address = settings.proxy_address.parse()?;
+    let proxy_address: Address = proxy_address.parse()?;
     let impl_address: Address = contract.method::<_, Address>("getProxyImplementation", proxy_address)?.call().await?;
     println!("The implementation address of proxy {:?} is {:?}", proxy_address, impl_address);
 
