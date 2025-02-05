@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let proxy_admin_addres = env::var("PROXY_ADMIN_ADDRESS")?;
     let proxy_address = env::var("PROXY_ADDRESS")?;
 
-    let settings = load_config()?;
+    let _settings = load_config()?; // deprecated
 
     let provider = Provider::<Http>::try_from(rpc_url)?;
     let client = Arc::new(provider);
