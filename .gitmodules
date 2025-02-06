@@ -8,3 +8,6 @@
 [submodule "lib/subnet-evm"]
 	path = lib/subnet-evm
 	url = https://github.com/ava-labs/subnet-evm
+[submodule "lib/openzeppelin-foundry-upgrades"]
+	path = lib/openzeppelin-foundry-upgrades
+	url = https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades
