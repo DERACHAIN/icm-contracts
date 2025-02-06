@@ -2,7 +2,7 @@
 pragma solidity 0.8.25;
 
 import "forge-std/Script.sol";
-import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+import {UnsafeUpgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "../NativeTokenStakingManager.sol";
 import {ValidatorManagerSettings, PoSValidatorManagerSettings} from "../interfaces/IPoSValidatorManager.sol";
 import {IRewardCalculator} from "../interfaces/IRewardCalculator.sol";
@@ -46,10 +46,10 @@ contract DeployWithPluginsScript is Script {
             settings
         );
 
-        address proxy = Upgrades.deployTransparentProxy(
-            "NativeTokenStakingManager.sol",
+        address proxy = UnsafeUpgrades.deployTransparentProxy(
+            address(nativeTokenStakingManager),
             address(deployer),
-            initData
+            abi.encodeCall(NativeTokenStakingManager.initialize, settings)
         );
 
         vm.stopBroadcast();
