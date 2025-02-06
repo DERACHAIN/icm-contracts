@@ -43,3 +43,6 @@ server.log
 # Forge documentation
 docs/
 coverage/
+
+# Environment variables
+.env
