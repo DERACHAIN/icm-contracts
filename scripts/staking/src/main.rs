@@ -1,6 +1,6 @@
 use ethers:: {
     providers::{Http, Provider},
-    types::{Address},
+    types::{Address, H256, Bytes},
     contract::Contract,
     core::abi::Abi,
 };
@@ -12,6 +12,7 @@ use std::error:: Error;
 
 use dotenv::dotenv;
 use std::env;
+use hex;
 
 #[derive(Debug, Deserialize)]
 struct Settings {
@@ -40,7 +41,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let _settings = load_config()?; // deprecated
 
-    let provider = Provider::<Http>::try_from(rpc_url)?;
+    let provider = Provider::<Http>::try_from(&rpc_url)?;
     let client = Arc::new(provider);
 
     let contract_address: Address = proxy_admin_addres.parse()?;
@@ -55,6 +56,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let proxy_address: Address = proxy_address.parse()?;
     let impl_address: Address = contract.method::<_, Address>("getProxyImplementation", proxy_address)?.call().await?;
     println!("The implementation address of proxy {:?} is {:?}", proxy_address, impl_address);
+
+    let provider2 = Provider::<Http>::try_from(&rpc_url)?;
+    let client2 = Arc::new(provider2);
+    let abiManager: Abi = serde_json::from_str(include_str!("../abis/native-token-staking-manager.abi.json"))?;
+    let managerContract = Contract::new(proxy_address, abiManager, client2);
+    let nodeIdStr = "5d7b4a79d1e63e8b54f698a7a19ebdd36dd23461";
+    let nodeId = hex::decode(&nodeIdStr).unwrap();
+
+    let validationId: H256 = managerContract.method("registeredValidators", Bytes::from(hex::decode(&nodeIdStr).unwrap()))?.call().await?;
+    println!("The validation id of node {:?} is {:?}", nodeIdStr, validationId);
 
     Ok(())
 }
