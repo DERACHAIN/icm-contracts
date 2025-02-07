@@ -1,0 +1,8 @@
+[package]
+name = "cb58-rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+avalanche-types = "0.1.5"
+hex = "0.4"

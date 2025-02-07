@@ -7,11 +7,10 @@ import "../NativeTokenStakingManager.sol";
 import {ValidatorManagerSettings, PoSValidatorManagerSettings} from "../interfaces/IPoSValidatorManager.sol";
 import {IRewardCalculator} from "../interfaces/IRewardCalculator.sol";
 
-contract DeployWithPluginsScript is Script {
+contract UpgradeScript is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         bytes32 l1ID = vm.envBytes32("L1_ID");
-        address rewardCalculator = vm.envAddress("REWARD_CALCULATOR");
         address proxyAddress = vm.envAddress("PROXY_ADDRESS");
 
         vm.startBroadcast(deployerPrivateKey);
