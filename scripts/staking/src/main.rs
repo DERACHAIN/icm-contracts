@@ -8,28 +8,11 @@ use std::sync::Arc;
 
 use serde::Deserialize;
 use config::{Config, Environment, File};
-use std::error:: Error;
+use std::error::Error;
 
 use dotenv::dotenv;
 use std::env;
 use hex;
-
-#[derive(Debug, Deserialize)]
-struct Settings {
-    rpc_url: String,
-    proxy_admin_address: String,
-    proxy_address: String,
-}
-
-fn load_config() -> Result<Settings, Box<dyn Error>> {
-    let config = Config::builder()
-                    .add_source(File::with_name("config"))
-                    .add_source(Environment::with_prefix("APP").separator("__"))
-                    .build()?;
-
-    let settings = config.try_deserialize::<Settings>()?;
-    Ok(settings)
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -38,8 +21,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let rpc_url = env::var("RPC_URL")?;
     let proxy_admin_addres = env::var("PROXY_ADMIN_ADDRESS")?;
     let proxy_address = env::var("PROXY_ADDRESS")?;
-
-    let _settings = load_config()?; // deprecated
 
     let provider = Provider::<Http>::try_from(&rpc_url)?;
     let client = Arc::new(provider);
