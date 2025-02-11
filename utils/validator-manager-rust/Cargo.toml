@@ -1,6 +1,6 @@
-[package]
-name = "validator-manager-rust"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-[dependencies]
+member = [
+    "manager",
+]
+members = ["manager", "l1_validator_manager"]
