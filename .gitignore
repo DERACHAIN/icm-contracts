@@ -46,3 +46,6 @@ coverage/
 
 # Environment variables
 .env
+
+broadcast/
+broadcast/*
