@@ -15,7 +15,7 @@ contract UpgradeScript is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        NativeTokenStakingManager nativeTokenStakingManagerV2 = new NativeTokenStakingManager(
+        NativeTokenStakingManager nativeTokenStakingManager = new NativeTokenStakingManager(
                 ICMInitializable.Allowed
             );
 
@@ -23,15 +23,15 @@ contract UpgradeScript is Script {
 
         UnsafeUpgrades.upgradeProxy(
             proxyAddress,
-            address(nativeTokenStakingManagerV2),
+            address(nativeTokenStakingManager),
             ""
         );
 
         vm.stopBroadcast();
 
         console.log(
-            "NativeTokenStakingManager new implementation deployed at: ",
-            address(nativeTokenStakingManagerV2)
+            "NativeTokenStakingManager update new implementation deployed at %s",
+            address(nativeTokenStakingManager)
         );
     }
 }

@@ -12,7 +12,9 @@ contract RevertUpgradeScript is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         bytes32 l1ID = vm.envBytes32("L1_ID");
         address proxyAddress = vm.envAddress("PROXY_ADDRESS");
-        address implementationAddress = vm.envAddress("IMPLEMENTATION_ADDRESS");
+        address implementationAddress = vm.envAddress(
+            "LEGACY_IMPLEMENTATION_ADDRESS"
+        );
 
         vm.startBroadcast(deployerPrivateKey);
 
@@ -23,7 +25,8 @@ contract RevertUpgradeScript is Script {
         vm.stopBroadcast();
 
         console.log(
-            "ValidatorManager is reverted back to implementation deployed at: ",
+            "ValidatorManager at proxy %s is reverted back to implementation at %s",
+            proxyAddress,
             implementationAddress
         );
     }
