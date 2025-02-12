@@ -1,17 +1,24 @@
 use ethers:: {
     providers::{Http, Provider},
     types::{Address, H256, Bytes},
-    contract::Contract,
+    contract::{Contract, abigen},
     core::abi::Abi,
+    middleware::SignerMiddleware,
+    signers::LocalWallet,
 };
 use std::sync::Arc;
 use std::error::Error;
 
-pub struct ValidatorManager {
-    abi: Abi,
-    contract: Contract<Provider<Http>>,
-}
+// generate type-safe contract bindings
+abigen!(
+    NativeTokenStakingManager,
+    "abis/native-token-staking-manager.abi.json",
+);
 
+pub struct ValidatorManager {
+    client: SignerMiddleware<Provider<Http>, LocalWallet>,
+    contract: NativeTokenStakingManager<SignerMiddleware<Provider<Http>, LocalWallet>>,
+}
 
 impl ValidatorManager {
     //! ValidatorManager create
@@ -22,18 +29,20 @@ impl ValidatorManager {
     /// Create a new ValidatorManager
     /// 
     /// # Arguments
-    /// rpc_url - The RPC URL of the Avalanche node
-    /// proxy_address - The address of the proxy contract
-    /// abi_str - The ABI of the proxy contract
-    pub fn new(rpc_url: &str, proxy_address: &str, abi_str: &str) -> Self {
+    /// * private_key - The private key of the account
+    /// * rpc_url - The RPC URL of the Avalanche node
+    /// * proxy_address - The address of the proxy contract
+    /// * abi_str - The ABI of the proxy contract
+    pub fn new(private_key: &str, rpc_url: &str, proxy_address: &str) -> Self {
         let provider = Provider::<Http>::try_from(rpc_url).unwrap();
-        let client = Arc::new(provider);
-        let proxy_address: Address = proxy_address.parse().unwrap();
-        let abi: Abi = serde_json::from_str(abi_str).unwrap();
-        let contract: Contract<Provider<Http>> = Contract::new(proxy_address, abi.clone(), client.clone());
+        let wallet = private_key.parse::<LocalWallet>().unwrap();
+        let client = SignerMiddleware::new(provider, wallet);
+        
+        let proxy_address: Address = proxy_address.parse().unwrap();        
+        let contract = NativeTokenStakingManager::new(proxy_address, Arc::new(client.clone()));
 
         ValidatorManager {
-            abi,
+            client,
             contract,
         }
     }
@@ -58,7 +67,34 @@ impl ValidatorManager {
     /// ```
     pub async fn get_validation_id(&self, node_id: &str) -> Result<H256, Box<dyn Error>> {
         let node_id_hex = hex::decode(node_id)?;
-        let validation_id: H256 = self.contract.method("registeredValidators", Bytes::from(node_id_hex))?.call().await?;
-        Ok(validation_id)
+        let validation_id = self.contract.registered_validators(Bytes::from(node_id_hex)).call().await?;
+        Ok(H256::from_slice(&validation_id))
+    }
+
+    pub async fn initialize_validator_registration(&self, node_id: &str, bls_public_key: &str, registration_expiry: u64,
+        remaining_balance_owner_address: &str, disable_owner_address: &str, delegation_fee_bips: u16, min_stake_duration: u64, stake_amount: u128) -> Result<H256, Box<dyn Error>> {
+
+        let node_id = Bytes::from(hex::decode(node_id).unwrap());
+        let bls_public_key = Bytes::from(hex::decode(bls_public_key).unwrap());
+
+        let validator_registration_input = ValidatorRegistrationInput {
+            node_id,
+            bls_public_key,
+            registration_expiry,
+            remaining_balance_owner: PchainOwner {
+                threshold: 1,
+                addresses: vec![remaining_balance_owner_address.parse().unwrap()],
+            },
+            disable_owner: PchainOwner {
+                threshold: 1,
+                addresses: vec![disable_owner_address.parse().unwrap()],
+            },
+        };
+        let contract_call = self.contract.initialize_validator_registration(validator_registration_input, delegation_fee_bips, min_stake_duration);
+        let call_with_value = contract_call.value(stake_amount);
+        let pending_tx = call_with_value.send().await?;
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
     }
 }
