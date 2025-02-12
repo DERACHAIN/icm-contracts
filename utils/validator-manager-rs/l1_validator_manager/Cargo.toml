@@ -4,6 +4,7 @@ version = "0.1.1"
 edition = "2021"
 description = "The library to interact with Avalanche L1 Validator Manager contract"
 license = "MIT OR Apache-2.0"
+readme = "README.md"
 
 [dependencies]
 ethers = "2.0"
