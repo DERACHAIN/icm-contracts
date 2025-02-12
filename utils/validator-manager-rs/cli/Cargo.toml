@@ -1,7 +1,10 @@
 [package]
-name = "manager"
+name = "cli"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 l1_validator_manager = { path = "../l1_validator_manager" }
+tokio = { version = "1.15.0", features = ["full"] }
+dotenv = "0.15"
+ethers = "2.0"

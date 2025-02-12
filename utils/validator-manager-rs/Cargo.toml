@@ -1,6 +1,3 @@
 [workspace]
 
-member = [
-    "manager",
-]
-members = ["manager", "l1_validator_manager"]
+members = ["l1_validator_manager", "cli"]
