@@ -22,3 +22,7 @@ then populate all necessary credentials and secrets.
 ## Remove validator
 
 - TBD
+
+## Copyright
+
+- TBD
