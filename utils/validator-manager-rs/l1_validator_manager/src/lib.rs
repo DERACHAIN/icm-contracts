@@ -1,3 +1,6 @@
+mod proxy_admin;
+pub use proxy_admin::ProxyAdmin;
+
 use ethers::{
     providers::{Http, Provider},
     types::{Address, H256, Bytes, U256},
