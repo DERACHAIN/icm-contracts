@@ -8,3 +8,5 @@ l1_validator_manager = { path = "../l1_validator_manager" }
 tokio = { version = "1.15.0", features = ["full"] }
 dotenv = "0.15"
 ethers = "2.0"
+avalanche-types = "0.1.5"
+hex = "0.4"

@@ -50,10 +50,10 @@ impl ValidatorManager {
         }
     }
 
-    /// Get the validation id of a node
+    /// Get the validationId of a node
     /// 
     /// # Arguments    
-    /// * `node_id` - The node id of the node
+    /// * `node_id` - The nodeId of the node without prefix `NodeID-`, e.g. `5d7b4a79d1e63e8b54f698a7a19ebdd36dd23461`
     /// 
     /// # Returns
     /// 
