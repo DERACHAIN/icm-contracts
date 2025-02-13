@@ -1,6 +1,6 @@
 use ethers::{
     providers::{Http, Provider},
-    types::{Address, H256, Bytes},
+    types::{Address, H256, Bytes, U256},
     contract::{Contract, abigen},
     core::abi::Abi,
     middleware::SignerMiddleware,
@@ -40,7 +40,6 @@ impl ValidatorManager {
         println!("Wallet address: {:?}", wallet.address());
 
         let client = SignerMiddleware::new(provider, wallet);
-        
         let proxy_address: Address = proxy_address.parse().unwrap();        
         let contract = NativeTokenStakingManager::new(proxy_address, Arc::new(client.clone()));
 
@@ -76,7 +75,7 @@ impl ValidatorManager {
 
     /// Initialize the validator registration
     pub async fn initialize_validator_registration(&self, node_id: &str, bls_public_key: &str, registration_expiry: u64,
-        remaining_balance_owner_address: &str, disable_owner_address: &str, delegation_fee_bips: u16, min_stake_duration: u64, stake_amount: u128) -> Result<H256, Box<dyn Error>> {
+        remaining_balance_owner_address: &str, disable_owner_address: &str, delegation_fee_bips: u16, min_stake_duration: u64, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
 
         let node_id = Bytes::from(hex::decode(node_id).unwrap());
         let bls_public_key = Bytes::from(hex::decode(bls_public_key).unwrap());

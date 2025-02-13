@@ -27,11 +27,11 @@ const NODEID_PREFIX: &str = "NodeID-";
 
 #[derive(Debug, Clone)]
 pub struct NodeID {
-    node_id: String,
-    cb58_id: String,
-    hex_id: String,
-    bls_public_key: String,
-    pop: String, // Proof of possession
+    pub node_id: String,
+    pub cb58_id: String,
+    pub hex_id: String,
+    pub bls_public_key: String,
+    pub pop: String, // Proof of possession
 }
 
 impl NodeID {
@@ -39,15 +39,15 @@ impl NodeID {
         let node_id = ids::node::Id::from_str(node_id_str).unwrap();
         println!("NodeID: {:?}", node_id.short_id());
         let short_id = node_id.short_id();
-        let hex_id = format!("0x{}", hex::encode(&short_id));
-        println!("Hex: {:?}", hex_id);
+        let hex_id = format!("{}", hex::encode(&short_id));
+        println!("Hex: 0x{:?}", hex_id);
 
         NodeID {
             node_id: node_id_str.to_string(),
             cb58_id: short_id.to_string(),
             hex_id,
-            bls_public_key: bls_public_key.to_string(),
-            pop: pop.to_string(),
+            bls_public_key: bls_public_key[2..].to_string(),
+            pop: pop[2..].to_string(),
         }
     }
 }
@@ -62,8 +62,8 @@ impl ValidationID {
     pub fn new(cb58_id: &str) -> ValidationID {
         let validation_id = ids::Id::from_str(cb58_id).unwrap();
         println!("ValidationID: {:?}", validation_id);
-        let hex_id = format!("0x{}", hex::encode(&validation_id));
-        println!("Hex: {:?}", hex_id);
+        let hex_id = format!("{}", hex::encode(&validation_id));
+        println!("Hex: 0x{:?}", hex_id);
 
         ValidationID {
             cb58_id: cb58_id.to_string(),
