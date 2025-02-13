@@ -10,6 +10,9 @@ import {IRewardCalculator} from "../interfaces/IRewardCalculator.sol";
 contract DeployScript is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerPrivateKey);
+        console.log("Deployer address: %s", deployer);
+
         bytes32 l1ID = vm.envBytes32("L1_ID");
         address rewardCalculator = vm.envAddress("REWARD_CALCULATOR");
 
@@ -18,8 +21,6 @@ contract DeployScript is Script {
         NativeTokenStakingManager nativeTokenStakingManager = new NativeTokenStakingManager(
                 ICMInitializable.Allowed
             );
-
-        address deployer = vm.addr(deployerPrivateKey);
 
         ValidatorManagerSettings
             memory validatorManagerSettings = ValidatorManagerSettings({

@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let owner_address = "0xc0Ce63ca7605cb29aA6bcd040715D2A383a9f4aC";
     let delegation_fee_bips = 10;
     let min_stake_duration = 3600;
-    let stake_amount = parse_ether(1).unwrap();
+    let stake_amount = parse_ether(100).unwrap();
 
     let tx_hash = validator_manager.initialize_validator_registration(&node_id.hex_id, 
         &node_id.bls_public_key, 

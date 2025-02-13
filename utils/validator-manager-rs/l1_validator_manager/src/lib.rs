@@ -85,12 +85,14 @@ impl ValidatorManager {
             bls_public_key,
             registration_expiry,
             remaining_balance_owner: PchainOwner {
-                threshold: 1,
-                addresses: vec![remaining_balance_owner_address.parse().unwrap()],
+                threshold: 0,
+                // addresses: vec![remaining_balance_owner_address.parse().unwrap()],
+                addresses: vec![],
             },
             disable_owner: PchainOwner {
-                threshold: 1,
-                addresses: vec![disable_owner_address.parse().unwrap()],
+                threshold: 0,
+                // addresses: vec![disable_owner_address.parse().unwrap()],
+                addresses: vec![],
             },
         };
         let contract_call = self.contract.initialize_validator_registration(validator_registration_input, delegation_fee_bips, min_stake_duration);
