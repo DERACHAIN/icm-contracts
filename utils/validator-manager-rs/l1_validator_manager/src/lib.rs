@@ -1,10 +1,10 @@
-use ethers:: {
+use ethers::{
     providers::{Http, Provider},
     types::{Address, H256, Bytes},
     contract::{Contract, abigen},
     core::abi::Abi,
     middleware::SignerMiddleware,
-    signers::LocalWallet,
+    signers::{LocalWallet, Signer},    
 };
 use std::sync::Arc;
 use std::error::Error;
@@ -36,6 +36,9 @@ impl ValidatorManager {
     pub fn new(private_key: &str, rpc_url: &str, proxy_address: &str) -> Self {
         let provider = Provider::<Http>::try_from(rpc_url).unwrap();
         let wallet = private_key.parse::<LocalWallet>().unwrap();
+
+        println!("Wallet address: {:?}", wallet.address());
+
         let client = SignerMiddleware::new(provider, wallet);
         
         let proxy_address: Address = proxy_address.parse().unwrap();        
@@ -71,6 +74,7 @@ impl ValidatorManager {
         Ok(H256::from_slice(&validation_id))
     }
 
+    /// Initialize the validator registration
     pub async fn initialize_validator_registration(&self, node_id: &str, bls_public_key: &str, registration_expiry: u64,
         remaining_balance_owner_address: &str, disable_owner_address: &str, delegation_fee_bips: u16, min_stake_duration: u64, stake_amount: u128) -> Result<H256, Box<dyn Error>> {
 
