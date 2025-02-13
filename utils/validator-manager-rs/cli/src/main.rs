@@ -4,7 +4,7 @@ use dotenv::dotenv;
 use std::error::Error;
 
 use cli::{Config, NodeID, ValidationID};
-use l1_validator_manager::ValidatorManager;
+use l1_validator_manager::{ValidatorManager, ProxyAdmin};
 use ethers::utils::parse_ether;
 
 #[tokio::main]
@@ -12,6 +12,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
     let config = Config::new();
     println!("Config: {:?}", config);
+
+    let proxy_admin = ProxyAdmin::new(&config.rpc_url, &config.proxy_admin_address);
+    let owner = proxy_admin.owner().await?;
+    let impl_address = proxy_admin.get_proxy_implementation(&config.proxy_address).await?;
+
+    println!("The owner address: {:?}", owner);
+    println!("The implementation address of proxy {:?} is {:?}", config.proxy_address, impl_address);
 
     let validator_manager = ValidatorManager::new(&config.private_key, &config.rpc_url, &config.proxy_address);
 
