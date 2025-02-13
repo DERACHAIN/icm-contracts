@@ -40,7 +40,6 @@ impl ValidatorManager {
         println!("Wallet address: {:?}", wallet.address());
 
         let client = SignerMiddleware::new(provider, wallet);
-        
         let proxy_address: Address = proxy_address.parse().unwrap();        
         let contract = NativeTokenStakingManager::new(proxy_address, Arc::new(client.clone()));
 

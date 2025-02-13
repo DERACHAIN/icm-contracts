@@ -1,3 +1,5 @@
+mod utils;
+
 use dotenv::dotenv;
 use std::error::Error;
 
@@ -8,7 +10,6 @@ use l1_validator_manager::ValidatorManager;
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
     let config = Config::new();
-
     println!("Config: {:?}", config);
 
     let validator_manager = ValidatorManager::new(&config.private_key, &config.rpc_url, &config.proxy_address);
@@ -26,6 +27,25 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let validation_id = ValidationID::new("AGZiRSc8MRpkaNA5t8a5BLTafzhPxntT5HJyFrL6czD3bKNHo");
     println!("ValidationID: {:?}", validation_id);
+
+    println!("Timestamp of 1 day from now {:?}", utils::get_future_timestamp(24*3600));
+
+    let expiration = utils::get_future_timestamp(24*3600);
+    let owner_address = "0xc0Ce63ca7605cb29aA6bcd040715D2A383a9f4aC";
+    let delegation_fee_bips = 10;
+    let min_stake_duration = 3600;
+    let stake_amount = 1;
+
+    let tx_hash = validator_manager.initialize_validator_registration(&node_id.hex_id, 
+        &node_id.bls_public_key, 
+        expiration,
+        &owner_address,
+        &owner_address,
+        delegation_fee_bips,
+        min_stake_duration,
+        stake_amount,
+    ).await?;
+    println!("Transaction hash {:?}", tx_hash);
 
     Ok(())
 }
