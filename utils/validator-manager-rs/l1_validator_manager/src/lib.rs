@@ -1,6 +1,9 @@
 mod proxy_admin;
 pub use proxy_admin::ProxyAdmin;
 
+mod warp_messenger;
+pub use warp_messenger::WarpMessenger;
+
 use ethers::{
     providers::{Http, Provider},
     types::{Address, H256, Bytes, U256},
@@ -72,6 +75,7 @@ impl ValidatorManager {
     /// ```
     pub async fn get_validation_id(&self, node_id: &str) -> Result<H256, Box<dyn Error>> {
         let node_id_hex = hex::decode(node_id)?;
+        println!("NodeID hex: {:?}", node_id_hex);
         let validation_id = self.contract.registered_validators(Bytes::from(node_id_hex)).call().await?;
         Ok(H256::from_slice(&validation_id))
     }

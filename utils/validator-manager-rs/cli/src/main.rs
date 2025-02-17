@@ -4,7 +4,7 @@ use dotenv::dotenv;
 use std::error::Error;
 
 use cli::{Config, NodeID, ValidationID};
-use l1_validator_manager::{ValidatorManager, ProxyAdmin};
+use l1_validator_manager::{ValidatorManager, ProxyAdmin, WarpMessenger};
 use ethers::utils::parse_ether;
 
 #[tokio::main]
@@ -44,16 +44,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let min_stake_duration = 3600;
     let stake_amount = parse_ether(100).unwrap();
 
-    let tx_hash = validator_manager.initialize_validator_registration(&node_id.hex_id, 
-        &node_id.bls_public_key, 
-        expiration,
-        &owner_address,
-        &owner_address,
-        delegation_fee_bips,
-        min_stake_duration,
-        stake_amount,
-    ).await?;
-    println!("Transaction hash {:?}", tx_hash);
+    // let tx_hash = validator_manager.initialize_validator_registration(&node_id.hex_id, 
+    //     &node_id.bls_public_key, 
+    //     expiration,
+    //     &owner_address,
+    //     &owner_address,
+    //     delegation_fee_bips,
+    //     min_stake_duration,
+    //     stake_amount,
+    // ).await?;
+    // println!("Transaction hash {:?}", tx_hash);
+
+    let warp_messenger = WarpMessenger::new(&config.rpc_url, &config.proxy_address);
+    let blockchain_id = warp_messenger.get_blockchain_id().await?;
+    println!("The blockchain id is {:?}", blockchain_id);
 
     Ok(())
 }
