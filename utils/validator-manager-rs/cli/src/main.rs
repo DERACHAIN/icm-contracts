@@ -55,7 +55,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // ).await?;
     // println!("Transaction hash {:?}", tx_hash);
 
-    let warp_messenger = WarpMessenger::new(&config.rpc_url, &config.proxy_address);
+    println!("Warp messager address {:?}", config.warp_address);
+    let warp_messenger = WarpMessenger::new(&config.rpc_url, &config.warp_address);
     let blockchain_id = warp_messenger.get_blockchain_id().await?;
     println!("The blockchain id is {:?}", blockchain_id);
 

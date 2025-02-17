@@ -10,6 +10,7 @@ pub struct Config {
     pub rpc_url: String,
     pub proxy_admin_address: String,
     pub proxy_address: String,
+    pub warp_address: String,
 }
 
 impl Config {
@@ -19,6 +20,7 @@ impl Config {
             rpc_url: env::var("RPC_URL").unwrap(),
             proxy_admin_address: env::var("PROXY_ADMIN_ADDRESS").unwrap(),
             proxy_address: env::var("PROXY_ADDRESS").unwrap(),
+            warp_address: env::var("WARP_ADDRESS").unwrap(),
         }
     }
 }
