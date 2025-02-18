@@ -35,12 +35,12 @@ contract UpgradeScript is Script {
         PoSValidatorManagerSettings
             memory settings = PoSValidatorManagerSettings({
                 baseSettings: validatorManagerSettings,
-                minimumStakeAmount: 1000 ether,
-                maximumStakeAmount: 1_000_000 ether,
+                minimumStakeAmount: 10_000 ether,
+                maximumStakeAmount: 100_000 ether,
                 minimumStakeDuration: 60 * 60 * 24,
                 minimumDelegationFeeBips: 10,
                 maximumStakeMultiplier: 5,
-                weightToValueFactor: 1_000,
+                weightToValueFactor: 1e21,
                 rewardCalculator: IRewardCalculator(rewardCalculator),
                 uptimeBlockchainID: l1ID
             });

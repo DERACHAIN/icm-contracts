@@ -91,7 +91,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
             stake_amount,
         )
         .await?;
-    println!("Transaction hash {:?}", tx_hash);
+    println!("InitializeValidatorRegistration TxHash {:?}", tx_hash);
 
     Ok(())
 }
