@@ -8,6 +8,7 @@ use std::str::FromStr;
 
 use l1_validator_manager::{ValidatorManager, ProxyAdmin, WarpMessenger};
 use ethers::utils::parse_ether;
+use ethers::types::{Address, H256, Bytes, U256};
 
 #[derive(Debug)]
 pub struct Config {
@@ -16,6 +17,9 @@ pub struct Config {
     pub proxy_admin_address: String,
     pub proxy_address: String,
     pub warp_address: String,
+    pub bootstrap_nodeid: String,
+    pub bootstrap_bls_public_key: String,
+    pub bootstrap_pop: String,
 }
 
 impl Config {
@@ -26,11 +30,15 @@ impl Config {
             proxy_admin_address: env::var("PROXY_ADMIN_ADDRESS").unwrap(),
             proxy_address: env::var("PROXY_ADDRESS").unwrap(),
             warp_address: env::var("WARP_ADDRESS").unwrap(),
+            bootstrap_nodeid: env::var("BOOTSTRAP_NODEID").unwrap(),
+            bootstrap_bls_public_key: env::var("BOOTSTRAP_BLS_PUBLIC_KEY").unwrap(),
+            bootstrap_pop: env::var("BOOTSTRAP_POP").unwrap(),
         }
     }
 }
 
 pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    // pre-checks the proxy admin and warp messenger
     let proxy_admin = ProxyAdmin::new(&config.rpc_url, &config.proxy_admin_address);
     let owner = proxy_admin.owner().await?;
     let impl_address = proxy_admin
@@ -43,25 +51,38 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
         config.proxy_address, impl_address
     );
 
+    let warp_messenger = WarpMessenger::new(&config.rpc_url, &config.warp_address);
+    let blockchain_id = warp_messenger.get_blockchain_id().await?;
+    println!("The blockchain id is {:?}", blockchain_id);
+
+    // pre-checks the validator manager
     let validator_manager =
         ValidatorManager::new(&config.private_key, &config.rpc_url, &config.proxy_address);
 
-    let node_id = "5d7b4a79d1e63e8b54f698a7a19ebdd36dd23461";
-    let validation_id = validator_manager.get_validation_id(&node_id).await?;
-    println!(
-        "The validation id of node {:?} is {:?}",
-        node_id, validation_id
+    let bootstrap_nodeid = NodeID::new(
+        &config.bootstrap_nodeid,
+        &config.bootstrap_bls_public_key,
+        &config.bootstrap_pop,
+    );
+    println!("NodeID: {:?}", bootstrap_nodeid.hex_id);
+
+    let validation_hexid = validator_manager
+        .get_validation_id(&bootstrap_nodeid.hex_id)
+        .await?;
+    println!("ValidationID hex: {:#x}", validation_hexid);
+
+    let validation_id = ValidationID::new(&env::var("BOOTSTRAP_VALIDATION_ID").unwrap());
+    let hexid_str: String = format!("{}", hex::encode(validation_hexid.as_bytes()));
+    assert_eq!(hexid_str, validation_id.hex_id);
+
+    // initialize validator registration
+    let new_validator = NodeID::new(
+        "NodeID-ALfV1Xq7TLYpwHQ9CLPviBamEXFYvQAKU",
+        "0xab3e94f1eaad2a7cd13660101cbfb20b7aa1cade10ae4d6bd0085c757857bf743d77133e76f59285be154d40894c32cd",
+        "0x89c581c41d128d9c2e554adbf5eb95cd96725938b597df02762c86e869c2070a44fce5faf19b98163aaf40ac4d04b6e2177b379287c3b4ea726d189db99db615eeedb7d9d1b74d5d628d7f1e0e963716d5929476912c97ee63e0c61f0b580409"
     );
 
-    let node_id = NodeID::new(
-        "NodeID-2mhirVhzPrgDMc1nZVJwXSXg8dKr9YwGh",
-        "0xb899613a28e1f55b250d587c9171fa241d11ec490f860f1b4cb8f33e7aa081956ce66c999b48d0b7712911522cc64c68",
-        "0xa3b7ca2b66ffc5e878f095d9267adfc531e13d8e6e075ec544eb60594c4286b55974721640d4c5ce6f446e37dd75d2ce02670aa2a8da9c9e11342b8bf41441a7bf3084547a941d0745e5a8190c73d10966cd2f06f281e68e22b0434f0ba14f78",
-    );
-    println!("NodeID: {:?}", node_id);
-
-    let validation_id = ValidationID::new("AGZiRSc8MRpkaNA5t8a5BLTafzhPxntT5HJyFrL6czD3bKNHo");
-    println!("ValidationID: {:?}", validation_id);
+    println!("New NodeID: {:?}", new_validator.hex_id);
 
     println!(
         "Timestamp of 1 day from now {:?}",
@@ -70,19 +91,14 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let expiration = utils::get_future_timestamp(24 * 3600);
     let owner_address = "0xc0Ce63ca7605cb29aA6bcd040715D2A383a9f4aC";
-    let delegation_fee_bips = 10;
-    let min_stake_duration = 3600;
-    let stake_amount = parse_ether(100).unwrap();
-
-    println!("Warp messager address {:?}", config.warp_address);
-    let warp_messenger = WarpMessenger::new(&config.rpc_url, &config.warp_address);
-    let blockchain_id = warp_messenger.get_blockchain_id().await?;
-    println!("The blockchain id is {:?}", blockchain_id);
+    let delegation_fee_bips = 20;
+    let min_stake_duration = 60*60*24*7;
+    let stake_amount = parse_ether(20000).unwrap();
 
     let tx_hash = validator_manager
         .initialize_validator_registration(
-            &node_id.hex_id,
-            &node_id.bls_public_key,
+            &new_validator.hex_id,
+            &new_validator.bls_public_key,
             expiration,
             &owner_address,
             &owner_address,
@@ -110,7 +126,7 @@ pub struct NodeID {
 impl NodeID {
     pub fn new(node_id_str: &str, bls_public_key: &str, pop: &str) -> Self {
         let node_id = ids::node::Id::from_str(node_id_str).unwrap();
-        println!("NodeID: {:?}", node_id.short_id());
+        //println!("NodeID: {:?}", node_id.short_id());
         let short_id = node_id.short_id();
         let hex_id = format!("{}", hex::encode(&short_id));
         println!("Hex: 0x{:?}", hex_id);
@@ -141,6 +157,20 @@ impl ValidationID {
         ValidationID {
             cb58_id: cb58_id.to_string(),
             hex_id,
+        }
+    }
+
+    pub fn newFromHex(hex_id: &H256) -> ValidationID {
+        let bytes = hex::decode(&hex_id).unwrap();
+        println!("Bytes: {:?}", bytes);
+        let validation_id = ids::Id::from_slice(&bytes);
+        println!("ValidationID: {:?}", validation_id);
+        let cb58_id = validation_id.to_string();
+        println!("CB58: {:?}", cb58_id);
+
+        ValidationID {
+            cb58_id,
+            hex_id: hex_id.to_string(),
         }
     }
 }
