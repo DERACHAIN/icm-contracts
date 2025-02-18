@@ -41,7 +41,7 @@ impl ValidatorManager {
     /// * abi_str - The ABI of the proxy contract
     pub fn new(private_key: &str, rpc_url: &str, proxy_address: &str) -> Self {
         let provider = Provider::<Http>::try_from(rpc_url).unwrap();
-        let wallet = private_key.parse::<LocalWallet>().unwrap();
+        let wallet = private_key.parse::<LocalWallet>().unwrap().with_chain_id(2025021401 as u64);
 
         println!("Wallet address: {:?}", wallet.address());
 
