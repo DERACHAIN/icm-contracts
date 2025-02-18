@@ -1,4 +1,0 @@
-rpc_url = "rpc endpoint"
-proxy_admin_address = "0xabc..."
-proxy_address = "0xabc..."
-implementation_address = "0xabc..."
