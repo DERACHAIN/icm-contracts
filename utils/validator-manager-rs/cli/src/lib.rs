@@ -95,19 +95,24 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let min_stake_duration = 60*60*24*7;
     let stake_amount = parse_ether(20000).unwrap();
 
-    let tx_hash = validator_manager
-        .initialize_validator_registration(
-            &new_validator.hex_id,
-            &new_validator.bls_public_key,
-            expiration,
-            &owner_address,
-            &owner_address,
-            delegation_fee_bips,
-            min_stake_duration,
-            stake_amount,
-        )
+    // let tx_hash = validator_manager
+    //     .initialize_validator_registration(
+    //         &new_validator.hex_id,
+    //         &new_validator.bls_public_key,
+    //         expiration,
+    //         &owner_address,
+    //         &owner_address,
+    //         delegation_fee_bips,
+    //         min_stake_duration,
+    //         stake_amount,
+    //     )
+    //     .await?;
+    // println!("InitializeValidatorRegistration TxHash {:?}", tx_hash);
+
+    let validation_hexid = validator_manager
+        .get_validation_id(&new_validator.hex_id)
         .await?;
-    println!("InitializeValidatorRegistration TxHash {:?}", tx_hash);
+    println!("!!!NEWValidationID hex: {:#x}", validation_hexid);
 
     Ok(())
 }
