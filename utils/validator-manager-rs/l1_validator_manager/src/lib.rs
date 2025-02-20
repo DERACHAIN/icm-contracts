@@ -25,7 +25,7 @@ abigen!(
 pub enum ValidatorStatus {
     Unknown,
     PendingAdded,
-    Active, 
+    Active,
     PendingRemoved,
     Completed,
     Invalidated
