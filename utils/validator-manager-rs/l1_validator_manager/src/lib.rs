@@ -21,6 +21,16 @@ abigen!(
     "abis/native-token-staking-manager.abi.json",
 );
 
+#[derive(Debug)]
+pub enum ValidatorStatus {
+    Unknown,
+    PendingAdded,
+    Active, 
+    PendingRemoved,
+    Completed,
+    Invalidated
+}
+
 pub struct ValidatorManager {
     client: SignerMiddleware<Provider<Http>, LocalWallet>,
     contract: NativeTokenStakingManager<SignerMiddleware<Provider<Http>, LocalWallet>>,
@@ -108,5 +118,17 @@ impl ValidatorManager {
         let receipt = pending_tx.await?;
 
         Ok(receipt.unwrap().transaction_hash)
+    }
+
+    /// Get validator information by validation ID
+    /// 
+    /// # Arguments
+    /// * `validation_id` - The validation ID as bytes32/H256
+    /// 
+    /// # Returns
+    /// * Result containing the Validator information
+    pub async fn get_validator(&self, validation_id: H256) -> Result<Validator, Box<dyn Error>> {
+        let validator = self.contract.get_validator(validation_id.into()).call().await?;
+        Ok(validator)
     }
 }
