@@ -43,7 +43,7 @@ contract NativeTokenStakingManager is
     // solhint-disable ordering
     function initialize(
         PoSValidatorManagerSettings calldata settings
-    ) external reinitializer(3) {
+    ) external reinitializer(6) {
         __NativeTokenStakingManager_init(settings);
     }
 
