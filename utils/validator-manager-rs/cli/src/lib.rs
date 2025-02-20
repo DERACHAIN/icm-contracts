@@ -114,6 +114,9 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
         .await?;
     println!("!!!NEWValidationID hex: {:#x}", validation_hexid);
 
+    let validator = validator_manager.get_validator(validation_hexid).await?;
+    println!("Validator: {:?}", validator);
+
     Ok(())
 }
 
