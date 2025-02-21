@@ -77,7 +77,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     // initialize validator registration
     let new_validator = NodeID::new(
-        "NodeID-CBRa26m4Vi974FWM6hHypGhjLF7vVGF5z",
+        "NodeID-3Vi6soaYCoZgfx1Av49ttuneUf8sVb59a",
         "0xab3e94f1eaad2a7cd13660101cbfb20b7aa1cade10ae4d6bd0085c757857bf743d77133e76f59285be154d40894c32cd",
         "0x89c581c41d128d9c2e554adbf5eb95cd96725938b597df02762c86e869c2070a44fce5faf19b98163aaf40ac4d04b6e2177b379287c3b4ea726d189db99db615eeedb7d9d1b74d5d628d7f1e0e963716d5929476912c97ee63e0c61f0b580409"
     );
