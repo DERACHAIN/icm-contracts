@@ -6,7 +6,7 @@ pub use warp_messenger::WarpMessenger;
 
 use ethers::{
     providers::{Http, Provider},
-    types::{Address, H256, Bytes, U256},
+    types::{Address, H256, Bytes, U256, U64},
     contract::{Contract, abigen},
     core::abi::Abi,
     middleware::SignerMiddleware,
@@ -29,6 +29,14 @@ pub enum ValidatorStatus {
     PendingRemoved,
     Completed,
     Invalidated
+}
+
+#[derive(Debug)]
+pub enum DelegatorStatus {
+    Unknown,
+    PendingAdded,
+    Active,
+    PendingRemoved
 }
 
 pub struct ValidatorManager {
@@ -102,14 +110,12 @@ impl ValidatorManager {
             bls_public_key,
             registration_expiry,
             remaining_balance_owner: PchainOwner {
-                threshold: 0,
-                // addresses: vec![remaining_balance_owner_address.parse().unwrap()],
-                addresses: vec![],
+                threshold: 1,
+                addresses: vec![remaining_balance_owner_address.parse().unwrap()],                
             },
             disable_owner: PchainOwner {
-                threshold: 0,
-                // addresses: vec![disable_owner_address.parse().unwrap()],
-                addresses: vec![],
+                threshold: 1,
+                addresses: vec![disable_owner_address.parse().unwrap()],                
             },
         };
         let contract_call = self.contract.initialize_validator_registration(validator_registration_input, delegation_fee_bips, min_stake_duration);
@@ -131,4 +137,39 @@ impl ValidatorManager {
         let validator = self.contract.get_validator(validation_id.into()).call().await?;
         Ok(validator)
     }
+
+    pub async fn initialize_delegator_registration(&self, validation_id: H256, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
+        let contract_call = self.contract.initialize_delegator_registration(validation_id.into());
+        let call_with_value = contract_call.value(stake_amount);
+        let pending_tx = call_with_value.send().await?;
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
+    }
+
+    /// Get the delegationID for a given validationID and nonce
+    /// 
+    /// # Arguments
+    /// * `validation_id` - The validation ID as H256
+    /// * `nonce` - The nonce as u64
+    ///
+    /// # Returns
+    /// * Result containing the delegation ID as H256
+    pub async fn get_delegation_id(&self, validation_id: H256, nonce: u64) -> Result<H256, Box<dyn Error>> {
+        let delegation_id = self.contract.get_delegation_id(validation_id.into(), nonce).call().await?;
+        Ok(H256::from_slice(&delegation_id))
+    }
+
+    /// Get delegator information by delegation ID
+    /// 
+    /// # Arguments
+    /// * `delegation_id` - The delegation ID as H256
+    ///
+    /// # Returns
+    /// * Result containing the Delegator information
+    pub async fn get_delegator(&self, delegation_id: H256) -> Result<Delegator, Box<dyn Error>> {
+        let delegator = self.contract.get_delegator(delegation_id.into()).call().await?;
+        Ok(delegator)
+    }
+
 }

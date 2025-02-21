@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 use l1_validator_manager::{ValidatorManager, ProxyAdmin, WarpMessenger};
 use ethers::utils::parse_ether;
-use ethers::types::{Address, H256, Bytes, U256};
+use ethers::types::{Address, H256, Bytes, U256, U64};
 
 #[derive(Debug)]
 pub struct Config {
@@ -77,7 +77,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     // initialize validator registration
     let new_validator = NodeID::new(
-        "NodeID-3Vi6soaYCoZgfx1Av49ttuneUf8sVb59a",
+        "NodeID-CBRa26m4Vi974FWM6hHypGhjLF7vVGF5z",
         "0xab3e94f1eaad2a7cd13660101cbfb20b7aa1cade10ae4d6bd0085c757857bf743d77133e76f59285be154d40894c32cd",
         "0x89c581c41d128d9c2e554adbf5eb95cd96725938b597df02762c86e869c2070a44fce5faf19b98163aaf40ac4d04b6e2177b379287c3b4ea726d189db99db615eeedb7d9d1b74d5d628d7f1e0e963716d5929476912c97ee63e0c61f0b580409"
     );
@@ -93,7 +93,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let owner_address = "0xc0Ce63ca7605cb29aA6bcd040715D2A383a9f4aC";
     let delegation_fee_bips = 20;
     let min_stake_duration = 60*60*24*7;
-    let stake_amount = parse_ether(20000).unwrap();
+    let mut stake_amount = parse_ether(20000).unwrap();
 
     // let tx_hash = validator_manager
     //     .initialize_validator_registration(
@@ -116,6 +116,26 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let validator = validator_manager.get_validator(validation_hexid).await?;
     println!("Validator: {:?}", validator);
+
+    // initialize delegator registration
+    if (false) {
+        stake_amount = parse_ether(1000).unwrap();
+        let tx_hash = validator_manager
+            .initialize_delegator_registration(validation_hexid, stake_amount)
+            .await?;
+
+        println!("InitializeDelegatorRegistration TxHash {:?}", tx_hash);
+    }
+
+    // Get delegation ID
+    //let validation_id = H256::from_slice(&[/* bytes */]);
+    let nonce: u64 = 1;
+    let delegation_id = validator_manager.get_delegation_id(validation_hexid, nonce).await?;
+    println!("DelegationID: {:?}", delegation_id);
+
+    // Get delegator info
+    let delegator = validator_manager.get_delegator(delegation_id).await?;
+    println!("Delegator: {:?}", delegator);
 
     Ok(())
 }
