@@ -381,6 +381,86 @@
     },
     {
       "type": "function",
+      "name": "getDelegationID",
+      "inputs": [
+        {
+          "name": "validationID",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "nonce",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getDelegator",
+      "inputs": [
+        {
+          "name": "delegationID",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "delegator",
+          "type": "tuple",
+          "internalType": "struct Delegator",
+          "components": [
+            {
+              "name": "status",
+              "type": "uint8",
+              "internalType": "enum DelegatorStatus"
+            },
+            {
+              "name": "owner",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "validationID",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "weight",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "startedAt",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "startingNonce",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "endingNonce",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "getValidator",
       "inputs": [
         {

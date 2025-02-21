@@ -13,6 +13,7 @@ import {INativeMinter} from "@avalabs/subnet-evm-contracts@1.2.0/contracts/inter
 import {ICMInitializable} from "@utilities/ICMInitializable.sol";
 import {Address} from "@openzeppelin/contracts@5.0.2/utils/Address.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable@5.0.2/proxy/utils/Initializable.sol";
+import {Delegator} from "./interfaces/IPoSValidatorManager.sol";
 
 /**
  * @dev Implementation of the {INativeTokenStakingManager} interface.
@@ -43,7 +44,7 @@ contract NativeTokenStakingManager is
     // solhint-disable ordering
     function initialize(
         PoSValidatorManagerSettings calldata settings
-    ) external reinitializer(6) {
+    ) external reinitializer(9) {
         __NativeTokenStakingManager_init(settings);
     }
 
@@ -89,6 +90,20 @@ contract NativeTokenStakingManager is
                 _msgSender(),
                 msg.value
             );
+    }
+
+    function getDelegationID(
+        bytes32 validationID,
+        uint64 nonce
+    ) external view returns (bytes32) {
+        return keccak256(abi.encodePacked(validationID, nonce));
+    }
+
+    function getDelegator(
+        bytes32 delegationID
+    ) external view returns (Delegator memory delegator) {
+        PoSValidatorManagerStorage storage $ = _getPoSValidatorManagerStorage();
+        return $._delegatorStakes[delegationID];
     }
 
     /**

@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 use l1_validator_manager::{ValidatorManager, ProxyAdmin, WarpMessenger};
 use ethers::utils::parse_ether;
-use ethers::types::{Address, H256, Bytes, U256};
+use ethers::types::{Address, H256, Bytes, U256, U64};
 
 #[derive(Debug)]
 pub struct Config {
@@ -93,7 +93,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let owner_address = "0xc0Ce63ca7605cb29aA6bcd040715D2A383a9f4aC";
     let delegation_fee_bips = 20;
     let min_stake_duration = 60*60*24*7;
-    let stake_amount = parse_ether(20000).unwrap();
+    let mut stake_amount = parse_ether(20000).unwrap();
 
     // let tx_hash = validator_manager
     //     .initialize_validator_registration(
@@ -116,6 +116,26 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let validator = validator_manager.get_validator(validation_hexid).await?;
     println!("Validator: {:?}", validator);
+
+    // initialize delegator registration
+    if (false) {
+        stake_amount = parse_ether(1000).unwrap();
+        let tx_hash = validator_manager
+            .initialize_delegator_registration(validation_hexid, stake_amount)
+            .await?;
+
+        println!("InitializeDelegatorRegistration TxHash {:?}", tx_hash);
+    }
+
+    // Get delegation ID
+    //let validation_id = H256::from_slice(&[/* bytes */]);
+    let nonce: u64 = 1;
+    let delegation_id = validator_manager.get_delegation_id(validation_hexid, nonce).await?;
+    println!("DelegationID: {:?}", delegation_id);
+
+    // Get delegator info
+    let delegator = validator_manager.get_delegator(delegation_id).await?;
+    println!("Delegator: {:?}", delegator);
 
     Ok(())
 }
