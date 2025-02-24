@@ -138,6 +138,11 @@ impl ValidatorManager {
         Ok(validator)
     }
 
+    pub async fn get_validator_info(&self, validation_id: H256) -> Result<PoSValidatorInfo, Box<dyn Error>> {
+        let validator_info = self.contract.get_validator_info(validation_id.into()).call().await?;
+        Ok(validator_info)
+    }
+
     pub async fn initialize_delegator_registration(&self, validation_id: H256, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
         let contract_call = self.contract.initialize_delegator_registration(validation_id.into());
         let call_with_value = contract_call.value(stake_amount);
@@ -170,6 +175,22 @@ impl ValidatorManager {
     pub async fn get_delegator(&self, delegation_id: H256) -> Result<Delegator, Box<dyn Error>> {
         let delegator = self.contract.get_delegator(delegation_id.into()).call().await?;
         Ok(delegator)
+    }
+
+    pub async fn initialize_end_delegation(&self, delegation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
+        let contract_call = self.contract.initialize_end_delegation(delegation_id.into(), include_uptime_proof, message_index);
+        let pending_tx = contract_call.send().await?;
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
+    }
+
+    pub async fn initialize_end_validation(&self, validation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
+        let contract_call = self.contract.initialize_end_validation(validation_id.into(), include_uptime_proof, message_index);
+        let pending_tx = contract_call.send().await?;
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
     }
 
 }

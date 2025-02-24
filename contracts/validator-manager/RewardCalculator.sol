@@ -33,13 +33,15 @@ contract RewardCalculator is IRewardCalculator {
     ) external view returns (uint256) {
         // Equivalent to uptimeSeconds/(validator.endedAt - validator.startedAt) < UPTIME_REWARDS_THRESHOLD_PERCENTAGE/100
         // Rearranged to prevent integer division truncation.
-        if (
-            uptimeSeconds * 100 <
-            (stakingEndTime - validatorStartTime) *
-                UPTIME_REWARDS_THRESHOLD_PERCENTAGE
-        ) {
-            return 0;
-        }
+
+        // TODO: disable the uptime-proof requirement for now
+        // if (
+        //     uptimeSeconds * 100 <
+        //     (stakingEndTime - validatorStartTime) *
+        //         UPTIME_REWARDS_THRESHOLD_PERCENTAGE
+        // ) {
+        //     return 0;
+        // }
 
         return
             (stakeAmount *

@@ -95,19 +95,21 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let min_stake_duration = 60*60*24*7;
     let mut stake_amount = parse_ether(20000).unwrap();
 
-    // let tx_hash = validator_manager
-    //     .initialize_validator_registration(
-    //         &new_validator.hex_id,
-    //         &new_validator.bls_public_key,
-    //         expiration,
-    //         &owner_address,
-    //         &owner_address,
-    //         delegation_fee_bips,
-    //         min_stake_duration,
-    //         stake_amount,
-    //     )
-    //     .await?;
-    // println!("InitializeValidatorRegistration TxHash {:?}", tx_hash);
+    if (false) {
+        let tx_hash = validator_manager
+            .initialize_validator_registration(
+                &new_validator.hex_id,
+                &new_validator.bls_public_key,
+                expiration,
+                &owner_address,
+                &owner_address,
+                delegation_fee_bips,
+                min_stake_duration,
+                stake_amount,
+            )
+            .await?;
+        println!("InitializeValidatorRegistration TxHash {:?}", tx_hash);
+    }
 
     let validation_hexid = validator_manager
         .get_validation_id(&new_validator.hex_id)
@@ -116,6 +118,9 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let validator = validator_manager.get_validator(validation_hexid).await?;
     println!("Validator: {:?}", validator);
+
+    let validator_info = validator_manager.get_validator_info(validation_hexid).await?;
+    println!("ValidatorInfo: {:?}", validator_info);
 
     // initialize delegator registration
     if (false) {
@@ -128,14 +133,40 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     }
 
     // Get delegation ID
-    //let validation_id = H256::from_slice(&[/* bytes */]);
-    let nonce: u64 = 1;
-    let delegation_id = validator_manager.get_delegation_id(validation_hexid, nonce).await?;
-    println!("DelegationID: {:?}", delegation_id);
+    if (false) {
+        let nonce: u64 = 1;
+        let delegation_id = validator_manager.get_delegation_id(validation_hexid, nonce).await?;
+        println!("DelegationID: {:?}", delegation_id);
 
-    // Get delegator info
-    let delegator = validator_manager.get_delegator(delegation_id).await?;
-    println!("Delegator: {:?}", delegator);
+        // Get delegator info
+        let delegator = validator_manager.get_delegator(delegation_id).await?;
+        println!("Delegator: {:?}", delegator);
+
+        // end delegation
+        let delegation_id = "0x0fa932bdee2a2324ab9f1aa8fa1706fd1e60c598b3953f4379befbf843607948".parse::<H256>().unwrap();
+        println!("EndDelegationID: {:?}", delegation_id);
+
+        // Get current delegator state
+        let delegator = validator_manager.get_delegator(delegation_id).await?;
+        println!("Delegator status: {:?}", delegator);
+        println!("Delegator Validator: {:?}", delegator.validation_id);
+
+        let validation_id = H256::from_slice(&delegator.validation_id);
+        println!("ValidationID: {:?}", validation_id);
+
+        let validator = validator_manager.get_validator(validation_id).await?;
+        println!("Validator: {:?}", validator);
+
+        let tx_hash = validator_manager.initialize_end_delegation(delegation_id, false, 0).await?;
+        println!("EndDelegation TxHash {:?}", tx_hash);
+    }
+
+    if (false) {
+        let tx_hash = validator_manager
+            .initialize_end_validation(validation_hexid, false, 0)
+            .await?;
+        println!("EndValidatorRegistration TxHash {:?}", tx_hash);
+    }
 
     Ok(())
 }

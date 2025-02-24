@@ -401,7 +401,7 @@
           "internalType": "bytes32"
         }
       ],
-      "stateMutability": "view"
+      "stateMutability": "pure"
     },
     {
       "type": "function",
@@ -507,6 +507,47 @@
             },
             {
               "name": "endedAt",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getValidatorInfo",
+      "inputs": [
+        {
+          "name": "validationID",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct PoSValidatorInfo",
+          "components": [
+            {
+              "name": "owner",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "delegationFeeBips",
+              "type": "uint16",
+              "internalType": "uint16"
+            },
+            {
+              "name": "minStakeDuration",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "uptimeSeconds",
               "type": "uint64",
               "internalType": "uint64"
             }

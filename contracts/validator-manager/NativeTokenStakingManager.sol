@@ -6,7 +6,7 @@
 pragma solidity 0.8.25;
 
 import {PoSValidatorManager} from "./PoSValidatorManager.sol";
-import {PoSValidatorManagerSettings} from "./interfaces/IPoSValidatorManager.sol";
+import {PoSValidatorManagerSettings, PoSValidatorInfo} from "./interfaces/IPoSValidatorManager.sol";
 import {ValidatorRegistrationInput} from "./interfaces/IValidatorManager.sol";
 import {INativeTokenStakingManager} from "./interfaces/INativeTokenStakingManager.sol";
 import {INativeMinter} from "@avalabs/subnet-evm-contracts@1.2.0/contracts/interfaces/INativeMinter.sol";
@@ -44,7 +44,7 @@ contract NativeTokenStakingManager is
     // solhint-disable ordering
     function initialize(
         PoSValidatorManagerSettings calldata settings
-    ) external reinitializer(9) {
+    ) external reinitializer(13) {
         __NativeTokenStakingManager_init(settings);
     }
 
@@ -78,6 +78,13 @@ contract NativeTokenStakingManager is
             );
     }
 
+    function getValidatorInfo(
+        bytes32 validationID
+    ) external view returns (PoSValidatorInfo memory) {
+        PoSValidatorManagerStorage storage $ = _getPoSValidatorManagerStorage();
+        return $._posValidatorInfo[validationID];
+    }
+
     /**
      * @notice See {INativeTokenStakingManager-initializeDelegatorRegistration}.
      */
@@ -95,7 +102,7 @@ contract NativeTokenStakingManager is
     function getDelegationID(
         bytes32 validationID,
         uint64 nonce
-    ) external view returns (bytes32) {
+    ) external pure returns (bytes32) {
         return keccak256(abi.encodePacked(validationID, nonce));
     }
 
@@ -127,6 +134,7 @@ contract NativeTokenStakingManager is
         address account,
         uint256 amount
     ) internal virtual override {
-        NATIVE_MINTER.mintNativeCoin(account, amount);
+        //TODO : native minter is disable
+        //NATIVE_MINTER.mintNativeCoin(account, amount);
     }
 }
