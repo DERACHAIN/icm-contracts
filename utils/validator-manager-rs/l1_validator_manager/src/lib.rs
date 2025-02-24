@@ -185,4 +185,12 @@ impl ValidatorManager {
         Ok(receipt.unwrap().transaction_hash)
     }
 
+    pub async fn initialize_end_validation(&self, validation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
+        let contract_call = self.contract.initialize_end_validation(validation_id.into(), include_uptime_proof, message_index);
+        let pending_tx = contract_call.send().await?;
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
+    }
+
 }
