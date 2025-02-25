@@ -11,3 +11,4 @@ ethers = "2.0"
 avalanche-types = "0.1.5"
 hex = "0.4"
 chrono = "0.4"
+clap = { version = "4.4", features = ["derive"] }
