@@ -165,7 +165,7 @@ enum ValidatorCommands {
         #[arg(long)]
         delegation_fee_bips: u16,
         
-        #[arg(long, default_value = "604800")] // 7 days in seconds
+        #[arg(long, default_value = "86400")] // 7 days in seconds
         min_stake_duration: u64,
         
         #[arg(long, default_value = "20000")]
@@ -216,23 +216,6 @@ enum DelegatorCommands {
 }
 
 pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    // pre-checks the proxy admin and warp messenger
-    // let proxy_admin = ProxyAdmin::new(&config.rpc_url, &config.proxy_admin_address);
-    // let owner = proxy_admin.owner().await?;
-    // let impl_address = proxy_admin
-    //     .get_proxy_implementation(&config.proxy_address)
-    //     .await?;
-
-    // println!("The owner address: {:?}", owner);
-    // println!(
-    //     "The implementation address of proxy {:?} is {:?}",
-    //     config.proxy_address, impl_address
-    // );
-
-    // let warp_messenger = WarpMessenger::new(&config.rpc_url, &config.warp_address);
-    // let blockchain_id = warp_messenger.get_blockchain_id().await?;
-    // println!("The blockchain id is {:?}", blockchain_id);
-
     let app = Cli::parse();
     let validator_manager =
             ValidatorManager::new(&config.private_key, &config.rpc_url, &config.proxy_address);
@@ -323,7 +306,7 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
         let expiration = utils::get_future_timestamp(24 * 3600);
         let owner_address = "0xc0Ce63ca7605cb29aA6bcd040715D2A383a9f4aC";
         let delegation_fee_bips = 20;
-        let min_stake_duration = 60*60*24*7;
+        let min_stake_duration = 60*60*24;
         let mut stake_amount = parse_ether(20000).unwrap();
 
         let tx_hash = validator_manager

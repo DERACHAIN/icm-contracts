@@ -7,7 +7,10 @@ use ethers::types::{Address, H256, Bytes, U256, U64};
 use ethers::utils::parse_ether;
 
 pub async fn handle_validator_info(manager: &ValidatorManager, node_id: &str) -> Result<(), Box<dyn Error>> {
-    let validation_id = manager.get_validation_id(node_id).await?;
+    let node_id = NodeID::new(node_id, "0x", "0x");
+    println!("Hex NodeID: {:?}", node_id.hex_id);
+
+    let validation_id = manager.get_validation_id(&node_id.hex_id).await?;
     println!("Validation ID: {:?}", validation_id);
 
     let validator_info = manager.get_validator(validation_id).await?;
