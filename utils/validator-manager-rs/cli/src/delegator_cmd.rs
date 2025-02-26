@@ -45,11 +45,11 @@ pub async fn handle_delegator_register(
     Ok(())
 }
 
-pub async fn handle_delegator_end(
+pub async fn handle_delegator_remove(
     manager: &ValidatorManager,
     delegation_id: &str,
-    early: bool,
-    nonce: u32,
+    include_uptime_proof: bool,
+    message_index: u32,
 ) -> Result<(), Box<dyn Error>> {
     let delegation_id = delegation_id.parse::<H256>().unwrap();
 
@@ -64,7 +64,7 @@ pub async fn handle_delegator_end(
     let validator = manager.get_validator(validation_id).await?;
     println!("Validator: {:?}", validator);
     
-    let tx_hash = manager.initialize_end_delegation(delegation_id, early, nonce)
+    let tx_hash = manager.initialize_end_delegation(delegation_id, include_uptime_proof, message_index)
         .await?;
     println!("EndDelegation TxHash {:?}", tx_hash);
     

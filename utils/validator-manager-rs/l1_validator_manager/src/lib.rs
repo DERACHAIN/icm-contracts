@@ -4,6 +4,9 @@ pub use proxy_admin::ProxyAdmin;
 mod warp_messenger;
 pub use warp_messenger::WarpMessenger;
 
+mod teleporter_messenger;
+pub use teleporter_messenger::{TeleporterMessenger};
+
 use ethers::{
     providers::{Http, Provider},
     types::{Address, H256, Bytes, U256, U64},
