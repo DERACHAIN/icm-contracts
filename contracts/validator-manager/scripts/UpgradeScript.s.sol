@@ -37,7 +37,7 @@ contract UpgradeScript is Script {
                 baseSettings: validatorManagerSettings,
                 minimumStakeAmount: 10_000 ether,
                 maximumStakeAmount: 100_000 ether,
-                minimumStakeDuration: 60 * 60 * 24,
+                minimumStakeDuration: 60 * 60,
                 minimumDelegationFeeBips: 10,
                 maximumStakeMultiplier: 5,
                 weightToValueFactor: 1e21,

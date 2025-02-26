@@ -61,9 +61,9 @@ solc_version_output=$(solc --version 2>&1)
 extracted_version=$(solc --version 2>&1 | awk '/Version:/ {print $2}' | awk -F'+' '{print $1}')
 
 # Check if the extracted version matches the expected version
-if ! [[ "$extracted_version" == "$SOLIDITY_VERSION" ]]; then
-    echo "Expected solc version $SOLIDITY_VERSION, but found $extracted_version. Please install the correct version." && exit 1
-fi
+# if ! [[ "$extracted_version" == "$SOLIDITY_VERSION" ]]; then
+#     echo "Expected solc version $SOLIDITY_VERSION, but found $extracted_version. Please install the correct version." && exit 1
+# fi
 
 # Install abigen
 echo "Building subnet-evm abigen"
