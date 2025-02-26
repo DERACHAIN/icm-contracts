@@ -40,7 +40,7 @@ impl Config {
             bootstrap_nodeid: env::var("BOOTSTRAP_NODEID").unwrap(),
             bootstrap_bls_public_key: env::var("BOOTSTRAP_BLS_PUBLIC_KEY").unwrap(),
             bootstrap_pop: env::var("BOOTSTRAP_POP").unwrap(),
-            teleporter_messenger: env::var("TELEPORTER_MESSENGER").unwrap(),
+            teleporter_messenger: env::var("TELEPORTER_ADDRESS").unwrap(),
         }
     }
 }
@@ -249,8 +249,7 @@ enum TeleporterCommands {
 
 pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let app = Cli::parse();
-    let validator_manager =
-            ValidatorManager::new(&config.private_key, &config.rpc_url, &config.proxy_address);
+    let validator_manager = ValidatorManager::new(&config.private_key, &config.rpc_url, &config.proxy_address);
 
     let teleporter_messenger = TeleporterMessenger::new(&config.private_key, &config.rpc_url, &config.teleporter_messenger);
 
