@@ -65,15 +65,18 @@ pub async fn handle_validator_register(
     Ok(())
 }
 
-pub async fn handle_validator_end(
+pub async fn handle_validator_remove(
     manager: &ValidatorManager,
     validation_id: &str,
-    early: bool,
-    nonce: u32,
+    include_uptime_proof: bool,
+    message_index: u32,
 ) -> Result<(), Box<dyn Error>> {
     let validation_hexid = validation_id.parse::<H256>().unwrap();
+
+    let validator = manager.get_validator(validation_hexid).await?;
+    println!("Validator: {:?}", validator);
     
-    let tx_hash = manager.initialize_end_validation(validation_hexid, early, nonce)
+    let tx_hash = manager.initialize_end_validation(validation_hexid, include_uptime_proof, message_index)
         .await?;
     println!("EndValidatorRegistration TxHash {:?}", tx_hash);
     

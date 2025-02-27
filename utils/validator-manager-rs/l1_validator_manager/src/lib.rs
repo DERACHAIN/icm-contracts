@@ -4,6 +4,9 @@ pub use proxy_admin::ProxyAdmin;
 mod warp_messenger;
 pub use warp_messenger::WarpMessenger;
 
+mod teleporter_messenger;
+pub use teleporter_messenger::{TeleporterMessenger};
+
 use ethers::{
     providers::{Http, Provider},
     types::{Address, H256, Bytes, U256, U64},
@@ -57,14 +60,14 @@ impl ValidatorManager {
     /// * rpc_url - The RPC URL of the Avalanche node
     /// * proxy_address - The address of the proxy contract
     /// * abi_str - The ABI of the proxy contract
-    pub fn new(private_key: &str, rpc_url: &str, proxy_address: &str) -> Self {
+    pub fn new(private_key: &str, rpc_url: &str, proxy_address: &str, eth_chainid: u64) -> Self {
         let provider = Provider::<Http>::try_from(rpc_url).unwrap();
-        let wallet = private_key.parse::<LocalWallet>().unwrap().with_chain_id(2025021401 as u64);
+        let wallet = private_key.parse::<LocalWallet>().unwrap().with_chain_id(eth_chainid);
 
         println!("Wallet address: {:?}", wallet.address());
 
         let client = SignerMiddleware::new(provider, wallet);
-        let proxy_address: Address = proxy_address.parse().unwrap();        
+        let proxy_address: Address = proxy_address.parse().unwrap();
         let contract = NativeTokenStakingManager::new(proxy_address, Arc::new(client.clone()));
 
         ValidatorManager {

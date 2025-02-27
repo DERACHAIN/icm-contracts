@@ -34,18 +34,13 @@ contract DeployScript is Script {
                 baseSettings: validatorManagerSettings,
                 minimumStakeAmount: 1000 ether,
                 maximumStakeAmount: 1_000_000 ether,
-                minimumStakeDuration: 60 * 60 * 24,
+                minimumStakeDuration: 60 * 60,
                 minimumDelegationFeeBips: 10,
                 maximumStakeMultiplier: 5,
                 weightToValueFactor: 1_000,
                 rewardCalculator: IRewardCalculator(rewardCalculator),
                 uptimeBlockchainID: l1ID
             });
-
-        bytes memory initData = abi.encodeWithSelector(
-            NativeTokenStakingManager.initialize.selector,
-            settings
-        );
 
         address proxy = UnsafeUpgrades.deployTransparentProxy(
             address(nativeTokenStakingManager),
