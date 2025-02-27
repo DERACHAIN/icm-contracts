@@ -18,24 +18,22 @@ abigen!(
 
 // Implementation with signing capabilities for sending transactions
 pub struct TeleporterMessenger {
-    contract: TeleporterMessengerContract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>,
+    contract: TeleporterMessengerContract<SignerMiddleware<Provider<Http>, LocalWallet>>,
 }
 
 impl TeleporterMessenger {
-    pub fn new(private_key: &str, rpc_url: &str, teleporter_address: &str) -> Self {
+    pub fn new(private_key: &str, rpc_url: &str, teleporter_address: &str, eth_chainid: u64) -> Self {
         // Set up the signer
-        let wallet: LocalWallet = private_key.parse().unwrap();
         let provider = Provider::<Http>::try_from(rpc_url).unwrap();
-        let provider_with_signer = SignerMiddleware::new(
-            Arc::new(provider),
-            wallet,
-        );
-        
+        let wallet = private_key.parse::<LocalWallet>().unwrap().with_chain_id(eth_chainid);
+
+        let client = SignerMiddleware::new(provider, wallet);        
         // Create the contract instance with signer
         let teleporter_address: Address = teleporter_address.parse().unwrap();
+
         let contract = TeleporterMessengerContract::new(
             teleporter_address, 
-            Arc::new(provider_with_signer),
+            Arc::new(client.clone()),
         );
 
         TeleporterMessenger { contract }

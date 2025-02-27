@@ -11,6 +11,7 @@ pub async fn handle_send_crosschain_message(messenger: &TeleporterMessenger,
     required_gas_limit: u64,
     message: &str,) -> Result<(), Box<dyn Error>> {
     let message_payload = message.as_bytes().to_vec();
+    
     let tx_hash = messenger.send_cross_chain_message(
         destination_blockchain_id,
         destination_address,
@@ -21,6 +22,12 @@ pub async fn handle_send_crosschain_message(messenger: &TeleporterMessenger,
     ).await?;
     
     println!("Message sent! Transaction hash: {:?}", tx_hash);
+
+    //let blockchain_id = messenger.get_blockchain_id().await?;
+    //println!("The blockchain id is {:?}", blockchain_id);
+
+    //let tx_hash = messenger.initialize_blockchain_id().await?;
+    //println!("InitializeBlockchainID TxHash {:?}", tx_hash);
 
     Ok(())
 }

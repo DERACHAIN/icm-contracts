@@ -20,6 +20,7 @@ use clap::{Parser, Subcommand};
 pub struct Config {
     pub private_key: String,
     pub rpc_url: String,
+    pub c_rpc_url: String,
     pub proxy_admin_address: String,
     pub proxy_address: String,
     pub warp_address: String,
@@ -27,6 +28,10 @@ pub struct Config {
     pub bootstrap_bls_public_key: String,
     pub bootstrap_pop: String,
     pub teleporter_messenger: String,
+    pub blockchain_id: String,
+    pub c_blockchain_id: String,
+    pub l1_eth_chainid: u64,
+    pub c_eth_chainid: u64,
 }
 
 impl Config {
@@ -34,6 +39,7 @@ impl Config {
         Config {
             private_key: env::var("PRIVATE_KEY").unwrap(),
             rpc_url: env::var("RPC_URL").unwrap(),
+            c_rpc_url: env::var("C_RPC_URL").unwrap(),
             proxy_admin_address: env::var("PROXY_ADMIN_ADDRESS").unwrap(),
             proxy_address: env::var("PROXY_ADDRESS").unwrap(),
             warp_address: env::var("WARP_ADDRESS").unwrap(),
@@ -41,6 +47,10 @@ impl Config {
             bootstrap_bls_public_key: env::var("BOOTSTRAP_BLS_PUBLIC_KEY").unwrap(),
             bootstrap_pop: env::var("BOOTSTRAP_POP").unwrap(),
             teleporter_messenger: env::var("TELEPORTER_ADDRESS").unwrap(),
+            blockchain_id: env::var("BLOCKCHAIN_ID").unwrap(),
+            c_blockchain_id: env::var("C_BLOCKCHAIN_ID").unwrap(),
+            l1_eth_chainid: env::var("L1_ETH_CHAINID").unwrap().parse::<u64>().unwrap(),
+            c_eth_chainid: env::var("C_ETH_CHAINID").unwrap().parse::<u64>().unwrap(),
         }
     }
 }
@@ -226,10 +236,24 @@ enum DelegatorCommands {
 #[derive(Subcommand)]
 enum TeleporterCommands {
     /// Send cross chain message
-    Send {
+    SendToCChain {
         #[arg(long)]
-        destination_blockchain_id: String,
+        destination_address: String,
 
+        #[arg(long)]
+        fee_token_address: String,
+
+        #[arg(long)]
+        fee_amount: String,
+
+        #[arg(long)]
+        required_gas_limit: u64,
+
+        #[arg(long)]
+        message: String,
+    },
+
+    SendToL1 {
         #[arg(long)]
         destination_address: String,
 
@@ -247,16 +271,17 @@ enum TeleporterCommands {
     },
 }
 
-pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
+pub async fn run(cfg: Config) -> Result<(), Box<dyn Error>> {
     let app = Cli::parse();
-    let validator_manager = ValidatorManager::new(&config.private_key, &config.rpc_url, &config.proxy_address);
+    let validator_manager = ValidatorManager::new(&cfg.private_key, &cfg.rpc_url, &cfg.proxy_address, cfg.l1_eth_chainid);
 
-    let teleporter_messenger = TeleporterMessenger::new(&config.private_key, &config.rpc_url, &config.teleporter_messenger);
+    let teleporter_messenger = TeleporterMessenger::new(&cfg.private_key, &cfg.rpc_url, &cfg.teleporter_messenger, cfg.l1_eth_chainid);
+    let c_teleporter_messenger = TeleporterMessenger::new(&cfg.private_key, &cfg.c_rpc_url, &cfg.teleporter_messenger, cfg.c_eth_chainid);
 
     match app.command {
         Commands::Admin { command } => match command {
-            AdminCommands::ProxyInfo => admin_cmd::handle_admin_proxy_info(&config.rpc_url, &config.proxy_admin_address, &config.proxy_address).await?,
-            AdminCommands::WarpInfo => admin_cmd::handle_admin_warp_info(&config.rpc_url, &config.warp_address).await?,
+            AdminCommands::ProxyInfo => admin_cmd::handle_admin_proxy_info(&cfg.rpc_url, &cfg.proxy_admin_address, &cfg.proxy_address).await?,
+            AdminCommands::WarpInfo => admin_cmd::handle_admin_warp_info(&cfg.rpc_url, &cfg.warp_address).await?,
         },
         Commands::Validator { command } => match command {
             ValidatorCommands::Info { node_id } => {
@@ -300,8 +325,11 @@ pub async fn run(config: Config) -> Result<(), Box<dyn Error>> {
             },
         },
         Commands::Teleporter { command } => match command {
-            TeleporterCommands::Send { destination_blockchain_id, destination_address, fee_token_address, fee_amount, required_gas_limit, message } => {
-                teleporter_cmd::handle_send_crosschain_message(&teleporter_messenger, &destination_blockchain_id, &destination_address, &fee_token_address, &fee_amount, required_gas_limit, &message).await?
+            TeleporterCommands::SendToCChain { destination_address, fee_token_address, fee_amount, required_gas_limit, message } => {
+                teleporter_cmd::handle_send_crosschain_message(&teleporter_messenger, &cfg.c_blockchain_id, &destination_address, &fee_token_address, &fee_amount, required_gas_limit, &message).await?
+            },
+            TeleporterCommands::SendToL1 { destination_address, fee_token_address, fee_amount, required_gas_limit, message } => {
+                teleporter_cmd::handle_send_crosschain_message(&c_teleporter_messenger, &cfg.blockchain_id, &destination_address, &fee_token_address, &fee_amount, required_gas_limit, &message).await?
             },
         },
     }
