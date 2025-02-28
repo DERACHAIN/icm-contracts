@@ -275,8 +275,8 @@ pub async fn run(cfg: Config) -> Result<(), Box<dyn Error>> {
     let app = Cli::parse();
     let validator_manager = ValidatorManager::new(&cfg.private_key, &cfg.rpc_url, &cfg.proxy_address, cfg.l1_eth_chainid);
 
-    let teleporter_messenger = TeleporterMessenger::new(&cfg.private_key, &cfg.rpc_url, &cfg.teleporter_messenger, cfg.l1_eth_chainid);
-    let c_teleporter_messenger = TeleporterMessenger::new(&cfg.private_key, &cfg.c_rpc_url, &cfg.teleporter_messenger, cfg.c_eth_chainid);
+    let teleporter_messenger = TeleporterMessenger::new(&cfg.private_key, &cfg.rpc_url, &cfg.teleporter_messenger, &cfg.l1_eth_chainid);
+    let c_teleporter_messenger = TeleporterMessenger::new(&cfg.private_key, &cfg.c_rpc_url, &cfg.teleporter_messenger, &cfg.c_eth_chainid);
 
     match app.command {
         Commands::Admin { command } => match command {
