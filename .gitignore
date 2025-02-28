@@ -45,7 +45,8 @@ docs/
 coverage/
 
 # Environment variables
-.env
+.env*
+!.env.example
 
 broadcast/
 broadcast/*
