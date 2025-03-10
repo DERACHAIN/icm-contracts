@@ -13,8 +13,11 @@ pub async fn handle_validator_info(manager: &ValidatorManager, node_id: &str) ->
     let validation_id = manager.get_validation_id(&node_id.hex_id).await?;
     println!("Validation ID: {:?}", validation_id);
 
-    let validator_info = manager.get_validator(validation_id).await?;
-    println!("Validator info: {:?}", validator_info);
+    let validator = manager.get_validator(validation_id).await?;
+    println!("Validator: {:?}", validator);
+
+    let validator_info = manager.get_validator_info(validation_id).await?;
+    println!("ValidatorInfo: {:?}", validator_info);
 
     Ok(())
 }

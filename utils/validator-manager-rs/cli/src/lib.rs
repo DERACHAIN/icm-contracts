@@ -180,10 +180,10 @@ enum ValidatorCommands {
         #[arg(long)]
         owner_address: String,
         
-        #[arg(long)]
+        #[arg(long, default_value = "100")]
         delegation_fee_bips: u16,
         
-        #[arg(long, default_value = "86400")] // 7 days in seconds
+        #[arg(long, default_value = "3600")] // 1 hour in seconds
         min_stake_duration: u64,
         
         #[arg(long, default_value = "20000")]
