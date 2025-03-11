@@ -50,3 +50,6 @@ coverage/
 
 broadcast/
 broadcast/*
+
+# MacOS files
+.DS_Store
