@@ -109,8 +109,8 @@ impl ValidatorManager {
     pub async fn initialize_validator_registration(&self, node_id: &str, bls_public_key: &str, registration_expiry: u64,
         remaining_balance_owner_address: &str, disable_owner_address: &str, delegation_fee_bips: u16, min_stake_duration: u64, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
 
-        let node_id = Bytes::from(hex::decode(node_id).unwrap());
-        let bls_public_key = Bytes::from(hex::decode(bls_public_key).unwrap());
+        let node_id = Bytes::from(hex::decode(node_id)?);
+        let bls_public_key = Bytes::from(hex::decode(bls_public_key)?);
 
         let validator_registration_input = ValidatorRegistrationInput {
             node_id,
@@ -118,11 +118,11 @@ impl ValidatorManager {
             registration_expiry,
             remaining_balance_owner: PchainOwner {
                 threshold: 1,
-                addresses: vec![remaining_balance_owner_address.parse().unwrap()],                
+                addresses: vec![remaining_balance_owner_address.parse()?],                
             },
             disable_owner: PchainOwner {
                 threshold: 1,
-                addresses: vec![disable_owner_address.parse().unwrap()],                
+                addresses: vec![disable_owner_address.parse()?],                
             },
         };
         let contract_call = self.contract.initialize_validator_registration(validator_registration_input, delegation_fee_bips, min_stake_duration);
@@ -130,9 +130,16 @@ impl ValidatorManager {
         let pending_tx = match call_with_value.send().await {
             Ok(tx) => tx,
             Err(err) => {
-                println!("Tx Error: {:?}", err.to_string());
+                println!("Tx Error: {:?}", &err.to_string());
                 if let Some(err_bytes) = utils::extract_revert_bytes(&err.to_string()) {
                     println!("Revert bytes: {:?}", err_bytes);
+
+                    if let Ok(err_str) = self.decode_contract_error(&err_bytes) {
+                        println!("Error: {:?}", err_str);
+                        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
+                    } else {
+                        println!("Error decoding error");
+                    }
                 } else {
                     println!("No revert bytes");
                 }
