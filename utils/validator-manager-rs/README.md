@@ -23,6 +23,20 @@ then populate all necessary credentials and secrets.
 
 - TBD
 
+## Send Crosschain message
+
+- Send to C-chain
+
+```sh
+$ cargo run -p cli -- teleporter send-to-c-chain --destination-address=<dest-address> --fee-token-address=<token-address> --fee-amount=<amount> --required-gas-limit=<gas-limit> --message=<msg>
+```
+
+- Send to L1
+
+```sh
+$ $ cargo run -p cli -- teleporter send-to-l1 --destination-address=<dest-address> --fee-token-address=<token-address> --fee-amount=<amount> --required-gas-limit=<gas-limit> --message=<msg>
+```
+
 ## Copyright
 
 - TBD
