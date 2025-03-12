@@ -130,36 +130,136 @@ impl ValidatorManager {
         let pending_tx = match call_with_value.send().await {
             Ok(tx) => tx,
             Err(err) => {
-                println!("Tx Error: {:?}", &err.to_string());
-                if let Some(err_bytes) = utils::extract_revert_bytes(&err.to_string()) {
-                    println!("Revert bytes: {:?}", err_bytes);
-
-                    if let Ok(err_str) = self.decode_contract_error(&err_bytes) {
-                        println!("Error: {:?}", err_str);
-                        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
-                    } else {
-                        println!("Error decoding error");
-                    }
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
                 } else {
-                    println!("No revert bytes");
-                }
+                    println!("Error decoding error");
+                }                
                 return Err(Box::new(err))
             }
         };
 
-        let receipt = match pending_tx.await {
-            Ok(Some(receipt)) => receipt,
-            Ok(None) => {
-                println!("Error: No receipt");
-                return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "No receipt")))
-            },
-            Err(err) => {
-                println!("Receipt Error: {:?}", err);
+        let receipt = pending_tx.await?;
+        
+        Ok(receipt.unwrap().transaction_hash)
+    }
+
+    /// Get validator information by validation ID
+    /// 
+    /// # Arguments
+    /// * `validation_id` - The validation ID as bytes32/H256
+    /// 
+    /// # Returns
+    /// * Result containing the Validator information
+    pub async fn get_validator(&self, validation_id: H256) -> Result<Validator, Box<dyn Error>> {
+        let validator = self.contract.get_validator(validation_id.into()).call().await?;
+        Ok(validator)
+    }
+
+    pub async fn get_validator_info(&self, validation_id: H256) -> Result<PoSValidatorInfo, Box<dyn Error>> {
+        let validator_info = self.contract.get_validator_info(validation_id.into()).call().await?;
+        Ok(validator_info)
+    }
+
+    /// Initialize the delegation registration
+    pub async fn initialize_delegator_registration(&self, validation_id: H256, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
+        let contract_call = self.contract.initialize_delegator_registration(validation_id.into());
+        let call_with_value = contract_call.value(stake_amount);
+        let pending_tx = match call_with_value.send().await {
+            Ok(tx) => tx,
+            Err(err) => {                
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
+                } else {
+                    println!("Error decoding error");
+                }                
                 return Err(Box::new(err))
             }
         };
-        
-        Ok(receipt.transaction_hash)
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
+    }
+
+    /// Get the delegationID for a given validationID and nonce
+    /// 
+    /// # Arguments
+    /// * `validation_id` - The validation ID as H256
+    /// * `nonce` - The nonce as u64
+    ///
+    /// # Returns
+    /// * Result containing the delegation ID as H256
+    pub async fn get_delegation_id(&self, validation_id: H256, nonce: u64) -> Result<H256, Box<dyn Error>> {
+        let delegation_id = self.contract.get_delegation_id(validation_id.into(), nonce).call().await?;
+        Ok(H256::from_slice(&delegation_id))
+    }
+
+    /// Get delegator information by delegation ID
+    /// 
+    /// # Arguments
+    /// * `delegation_id` - The delegation ID as H256
+    ///
+    /// # Returns
+    /// * Result containing the Delegator information
+    pub async fn get_delegator(&self, delegation_id: H256) -> Result<Delegator, Box<dyn Error>> {
+        let delegator = self.contract.get_delegator(delegation_id.into()).call().await?;
+        Ok(delegator)
+    }
+
+    pub async fn initialize_end_delegation(&self, delegation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
+        let contract_call = self.contract.initialize_end_delegation(delegation_id.into(), include_uptime_proof, message_index);
+        let pending_tx = match contract_call.send().await {
+            Ok(tx) => tx,
+            Err(err) => {                
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
+                } else {
+                    println!("Error decoding error");
+                }                
+                return Err(Box::new(err))
+            }
+        };
+
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
+    }
+
+    pub async fn initialize_end_validation(&self, validation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
+        let contract_call = self.contract.initialize_end_validation(validation_id.into(), include_uptime_proof, message_index);
+        let pending_tx = match contract_call.send().await {
+            Ok(tx) => tx,
+            Err(err) => {                
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
+                } else {
+                    println!("Error decoding error");
+                }                
+                return Err(Box::new(err))
+            }
+        };
+
+        let receipt = pending_tx.await?;
+
+        Ok(receipt.unwrap().transaction_hash)
+    }
+
+    /// Decode contract error to human readable string
+    fn decode_error(&self, err: &dyn Error) -> Option<String> {
+        println!("Tx Error: {:?}", err.to_string());
+        if let Some(err_bytes) = utils::extract_revert_bytes(&err.to_string()) {
+            println!("Revert bytes: {:?}", err_bytes);
+
+            if let Ok(err_str) = self.decode_contract_error(&err_bytes) {
+                println!("Error: {:?}", err_str);
+                return Some(err_str)
+            } else {
+                println!("Error decoding error");
+            }
+        } else {
+            println!("No revert bytes");
+        }
+        return None
     }
 
     // Decode contract error using the generated error types from abigen
@@ -210,73 +310,6 @@ impl ValidatorManager {
         };
         
         Ok(result)
-    }
-
-    /// Get validator information by validation ID
-    /// 
-    /// # Arguments
-    /// * `validation_id` - The validation ID as bytes32/H256
-    /// 
-    /// # Returns
-    /// * Result containing the Validator information
-    pub async fn get_validator(&self, validation_id: H256) -> Result<Validator, Box<dyn Error>> {
-        let validator = self.contract.get_validator(validation_id.into()).call().await?;
-        Ok(validator)
-    }
-
-    pub async fn get_validator_info(&self, validation_id: H256) -> Result<PoSValidatorInfo, Box<dyn Error>> {
-        let validator_info = self.contract.get_validator_info(validation_id.into()).call().await?;
-        Ok(validator_info)
-    }
-
-    pub async fn initialize_delegator_registration(&self, validation_id: H256, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
-        let contract_call = self.contract.initialize_delegator_registration(validation_id.into());
-        let call_with_value = contract_call.value(stake_amount);
-        let pending_tx = call_with_value.send().await?;
-        let receipt = pending_tx.await?;
-
-        Ok(receipt.unwrap().transaction_hash)
-    }
-
-    /// Get the delegationID for a given validationID and nonce
-    /// 
-    /// # Arguments
-    /// * `validation_id` - The validation ID as H256
-    /// * `nonce` - The nonce as u64
-    ///
-    /// # Returns
-    /// * Result containing the delegation ID as H256
-    pub async fn get_delegation_id(&self, validation_id: H256, nonce: u64) -> Result<H256, Box<dyn Error>> {
-        let delegation_id = self.contract.get_delegation_id(validation_id.into(), nonce).call().await?;
-        Ok(H256::from_slice(&delegation_id))
-    }
-
-    /// Get delegator information by delegation ID
-    /// 
-    /// # Arguments
-    /// * `delegation_id` - The delegation ID as H256
-    ///
-    /// # Returns
-    /// * Result containing the Delegator information
-    pub async fn get_delegator(&self, delegation_id: H256) -> Result<Delegator, Box<dyn Error>> {
-        let delegator = self.contract.get_delegator(delegation_id.into()).call().await?;
-        Ok(delegator)
-    }
-
-    pub async fn initialize_end_delegation(&self, delegation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
-        let contract_call = self.contract.initialize_end_delegation(delegation_id.into(), include_uptime_proof, message_index);
-        let pending_tx = contract_call.send().await?;
-        let receipt = pending_tx.await?;
-
-        Ok(receipt.unwrap().transaction_hash)
-    }
-
-    pub async fn initialize_end_validation(&self, validation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
-        let contract_call = self.contract.initialize_end_validation(validation_id.into(), include_uptime_proof, message_index);
-        let pending_tx = contract_call.send().await?;
-        let receipt = pending_tx.await?;
-
-        Ok(receipt.unwrap().transaction_hash)
     }
 
 }
