@@ -165,6 +165,14 @@ impl ValidatorManager {
         Ok(validator_info)
     }
 
+    /// Initialize the delegator registration
+    ///     
+    /// # Arguments
+    /// * `validation_id` - The validation ID as H256
+    /// * `stake_amount` - The stake amount as U256
+    /// 
+    /// # Returns
+    /// * Result containing the transaction hash as H256
     pub async fn initialize_delegator_registration(&self, validation_id: H256, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
         let contract_call = self.contract.initialize_delegator_registration(validation_id.into());
         let call_with_value = contract_call.value(stake_amount);
