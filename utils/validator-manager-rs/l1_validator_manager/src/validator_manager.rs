@@ -123,19 +123,11 @@ impl ValidatorManager {
         let pending_tx = match call_with_value.send().await {
             Ok(tx) => tx,
             Err(err) => {
-                println!("Tx Error: {:?}", &err.to_string());
-                if let Some(err_bytes) = extract_revert_bytes(&err.to_string()) {
-                    println!("Revert bytes: {:?}", err_bytes);
-
-                    if let Ok(err_str) = self.decode_contract_error(&err_bytes) {
-                        println!("Error: {:?}", err_str);
-                        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
-                    } else {
-                        println!("Error decoding error");
-                    }
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
                 } else {
-                    println!("No revert bytes");
-                }
+                    println!("Error decoding error");
+                }                
                 return Err(Box::new(err))
             }
         };
@@ -165,7 +157,18 @@ impl ValidatorManager {
     pub async fn initialize_delegator_registration(&self, validation_id: H256, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
         let contract_call = self.contract.initialize_delegator_registration(validation_id.into());
         let call_with_value = contract_call.value(stake_amount);
-        let pending_tx = call_with_value.send().await?;
+        let pending_tx = match call_with_value.send().await {
+            Ok(tx) => tx,
+            Err(err) => {
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
+                } else {
+                    println!("Error decoding error");
+                }                
+                return Err(Box::new(err))
+            }
+        };
+        
         let receipt = pending_tx.await?;
 
         Ok(receipt.unwrap().transaction_hash)
@@ -198,7 +201,18 @@ impl ValidatorManager {
 
     pub async fn initialize_end_delegation(&self, delegation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
         let contract_call = self.contract.initialize_end_delegation(delegation_id.into(), include_uptime_proof, message_index);
-        let pending_tx = contract_call.send().await?;
+        let pending_tx = match contract_call.send().await {
+            Ok(tx) => tx,
+            Err(err) => {
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
+                } else {
+                    println!("Error decoding error");
+                }                
+                return Err(Box::new(err))
+            }
+        };
+
         let receipt = pending_tx.await?;
 
         Ok(receipt.unwrap().transaction_hash)
@@ -206,7 +220,18 @@ impl ValidatorManager {
 
     pub async fn initialize_end_validation(&self, validation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
         let contract_call = self.contract.initialize_end_validation(validation_id.into(), include_uptime_proof, message_index);
-        let pending_tx = contract_call.send().await?;
+        let pending_tx = match contract_call.send().await {
+            Ok(tx) => tx,
+            Err(err) => {
+                if let Some(err_str) = self.decode_error(&err) {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, err_str)))
+                } else {
+                    println!("Error decoding error");
+                }                
+                return Err(Box::new(err))
+            }
+        };
+
         let receipt = pending_tx.await?;
 
         Ok(receipt.unwrap().transaction_hash)
@@ -215,7 +240,7 @@ impl ValidatorManager {
     /// Decode contract error to human readable string
     fn decode_error(&self, err: &dyn Error) -> Option<String> {
         println!("Tx Error: {:?}", err.to_string());
-        if let Some(err_bytes) = utils::extract_revert_bytes(&err.to_string()) {
+        if let Some(err_bytes) = extract_revert_bytes(&err.to_string()) {
             println!("Revert bytes: {:?}", err_bytes);
 
             if let Ok(err_str) = self.decode_contract_error(&err_bytes) {
