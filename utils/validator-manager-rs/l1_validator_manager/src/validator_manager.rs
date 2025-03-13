@@ -98,6 +98,17 @@ impl ValidatorManager {
     }
 
     /// Initialize the validator registration
+    ///
+    /// # Arguments
+    /// * `node_id` - The node ID as hex string
+    /// * `bls_public_key` - The BLS public key as hex string
+    /// * `registration_expiry` - The registration expiry as u64
+    /// * `delegation_fee_bips` - The delegation fee in basis points as u16
+    /// * `min_stake_duration` - The minimum stake duration as u64
+    /// * `stake_amount` - The stake amount as U256
+    ///
+    /// # Returns
+    /// * Result containing the transaction hash as H256    
     pub async fn initialize_validator_registration(&self, node_id: &str, bls_public_key: &str, registration_expiry: u64, delegation_fee_bips: u16, min_stake_duration: u64, stake_amount: U256) -> Result<H256, Box<dyn Error>> {
 
         let node_id = Bytes::from(hex::decode(node_id)?);
@@ -168,7 +179,7 @@ impl ValidatorManager {
                 return Err(Box::new(err))
             }
         };
-        
+
         let receipt = pending_tx.await?;
 
         Ok(receipt.unwrap().transaction_hash)
@@ -199,6 +210,15 @@ impl ValidatorManager {
         Ok(delegator)
     }
 
+    /// Initialize the end delegation
+    ///
+    /// # Arguments
+    /// * `delegation_id` - The delegation ID as H256
+    /// * `include_uptime_proof` - Include uptime proof as bool
+    /// * `message_index` - The message index as u32, default is 0
+    ///
+    /// # Returns
+    /// * Result containing the transaction hash as H256
     pub async fn initialize_end_delegation(&self, delegation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
         let contract_call = self.contract.initialize_end_delegation(delegation_id.into(), include_uptime_proof, message_index);
         let pending_tx = match contract_call.send().await {
@@ -218,6 +238,15 @@ impl ValidatorManager {
         Ok(receipt.unwrap().transaction_hash)
     }
 
+    /// Initialize the end validation
+    ///
+    /// # Arguments
+    /// * `validation_id` - The validation ID as H256
+    /// * `include_uptime_proof` - Include uptime proof as bool
+    /// * `message_index` - The message index as u32, default is 0
+    ///
+    /// # Returns
+    /// * Result containing the transaction hash as H256
     pub async fn initialize_end_validation(&self, validation_id: H256, include_uptime_proof: bool, message_index: u32) -> Result<H256, Box<dyn Error>> {
         let contract_call = self.contract.initialize_end_validation(validation_id.into(), include_uptime_proof, message_index);
         let pending_tx = match contract_call.send().await {
