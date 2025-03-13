@@ -5,9 +5,9 @@ mod warp_messenger;
 pub use warp_messenger::WarpMessenger;
 
 mod teleporter_messenger;
-pub use teleporter_messenger::{TeleporterMessenger};
+pub use teleporter_messenger::TeleporterMessenger;
 
 mod utils;
 
 mod validator_manager;
-pub use validator_manager::{ValidatorManager};
+pub use validator_manager::ValidatorManager;
