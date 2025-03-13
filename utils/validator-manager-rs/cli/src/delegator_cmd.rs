@@ -11,14 +11,15 @@ pub async fn handle_delegator_info(
     let delegation_id = delegation_id.parse::<H256>().unwrap();
     
     let delegator = manager.get_delegator(delegation_id).await?;
-    println!("Delegator status: {:?}", delegator);
-    println!("Delegator Validator: {:?}", delegator.validation_id);
-    
+        
     let validation_id = H256::from_slice(&delegator.validation_id);
     println!("ValidationID: {:?}", validation_id);
     
     let validator = manager.get_validator(validation_id).await?;
     println!("Validator: {:?}", validator);
+
+    println!("Delegator Validator: {:?}", delegator.validation_id);
+    println!("Delegator status: {:?}", delegator);
     
     Ok(())
 }

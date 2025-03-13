@@ -27,7 +27,6 @@ pub async fn handle_validator_register(
     node_id: &str,
     bls_public_key: &str,
     pop: &str,
-    owner_address: &str,
     delegation_fee_bips: u16,
     min_stake_duration: u64,
     stake_amount: u64,
@@ -46,8 +45,6 @@ pub async fn handle_validator_register(
             &new_validator.hex_id,
             &new_validator.bls_public_key,
             expiration,
-            owner_address,
-            owner_address, // Using same address for reward address
             delegation_fee_bips,
             min_stake_duration,
             stake_amount_wei,
