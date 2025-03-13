@@ -212,6 +212,24 @@ impl ValidatorManager {
         Ok(receipt.unwrap().transaction_hash)
     }
 
+    /// Decode contract error to human readable string
+    fn decode_error(&self, err: &dyn Error) -> Option<String> {
+        println!("Tx Error: {:?}", err.to_string());
+        if let Some(err_bytes) = utils::extract_revert_bytes(&err.to_string()) {
+            println!("Revert bytes: {:?}", err_bytes);
+
+            if let Ok(err_str) = self.decode_contract_error(&err_bytes) {
+                println!("Error: {:?}", err_str);
+                return Some(err_str)
+            } else {
+                println!("Error decoding error");
+            }
+        } else {
+            println!("No revert bytes");
+        }
+        return None
+    }
+
     // Decode contract error using the generated error types from abigen
     fn decode_contract_error(&self, bytes: &[u8]) -> Result<String, Box<dyn Error>> {
         // The first 4 bytes are the error selector
