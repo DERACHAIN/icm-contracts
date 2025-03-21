@@ -13,7 +13,7 @@ contract UpgradeScript is Script {
         address deployer = vm.addr(deployerPrivateKey);
         console.log("Deployer address: %s", deployer);
 
-        bytes32 l1ID = vm.envBytes32("L1_ID");
+        bytes32 l1ID = vm.envBytes32("SUBNETID_HEX");
         address proxyAddress = vm.envAddress("PROXY_ADDRESS");
 
         vm.startBroadcast(deployerPrivateKey);
