@@ -21,9 +21,34 @@ $ forge build
 
 ## Upgrade
 
+- Increase the VERSION_NUMBER in `contracts/validator-manager/NativeTokenStakingManager.sol`
+
+```solidity
+function initialize(
+        PoSValidatorManagerSettings calldata settings
+    ) external reinitializer(<VERSION_NUMBER>) {
+        __NativeTokenStakingManager_init(settings);
+    }
+```
+
+- Compile 
+
+```sh
+$ forge clean && forge build
+```
+
+- Upgrade ValidatorManager implementation
+
 ```sh
 $ forge script contracts/validator-manager/scripts/UpgradeScript.s.sol \
 --rpc-url RPC_URL --broadcast -vvvv
 ```
 
 >   *Note: Should dry-run before actual deployment by omitting the `--broadcast` argument from the command*
+
+- Confirm the new implementation using `utils/validator-manager-rs` command
+
+```sh
+$ cd utils/validator-manager-rs
+$ cargo run -p cli -- admin proxy-info
+```
