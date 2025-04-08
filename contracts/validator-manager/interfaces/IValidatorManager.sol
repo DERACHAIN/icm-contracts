@@ -118,8 +118,14 @@ interface IValidatorManager {
         uint64 registrationExpiry
     );
 
+    // @deprecated
     event InitialValidatorCreated(
         bytes32 indexed validationID, bytes indexed nodeID, uint64 weight
+    );
+
+    /// @notice Emitted when an initial validator is registered.
+    event RegisteredInitialValidator(
+        bytes32 indexed validationID, bytes20 indexed nodeID, uint64 weight
     );
 
     /**
