@@ -13,7 +13,7 @@ The CLI tools to interact with ValidatorManager and Teleporter smart contracts, 
 |
 ├── l1_validator_manager - library package
 │   ├── abis - smart contract ABIs, including: ValidatorManager, ProxyAdmin, Teleporter
-│   └── src - library
+│   └── src - library code, including Rust bindings of smart contracts and utility helpers
 ```
 
 ## Setup
