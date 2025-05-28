@@ -3,6 +3,7 @@ ICM smart contracts for DERA chain, including:
 
 - ValidatorManager
 - Teleporter
+- ICTT (unused)
 
 ## Structure
 
