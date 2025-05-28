@@ -23,11 +23,5 @@ pub async fn handle_send_crosschain_message(messenger: &TeleporterMessenger,
     
     println!("Message sent! Transaction hash: {:?}", tx_hash);
 
-    //let blockchain_id = messenger.get_blockchain_id().await?;
-    //println!("The blockchain id is {:?}", blockchain_id);
-
-    //let tx_hash = messenger.initialize_blockchain_id().await?;
-    //println!("InitializeBlockchainID TxHash {:?}", tx_hash);
-
     Ok(())
 }
