@@ -48,7 +48,7 @@ $ cargo run -p cli -- admin warp-info
 
 ## Validator commands
 
-- Get validator infor by its NodeID
+- Get validator infor by its NodeID, i.e. the validator status, owner address, weight, nonce, stake duration, etc
 
 ```sh
 $ cargo run -p cli -- validator info --node-id=NODE_ID
@@ -71,7 +71,7 @@ $ cargo run -p cli -- validator remove --validation-id=HEX32_VALIDATION_ID --inc
 
 ## Delegator commands
 
-- Get delegator info by its delegation ID
+- Get delegator info by its delegation ID, i.e. the delegator status, owner address, weight, start time, etc
 
 ```sh
 $ cargo run -p cli -- delegator info --delegation-id=HEX32_DELEGATION_ID
