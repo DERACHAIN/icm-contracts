@@ -129,16 +129,16 @@ enum DelegatorCommands {
 enum TeleporterCommands {
     /// Send cross chain message
     SendToCChain {
-        #[arg(long)]
+        #[arg(long, default_value = "0x0000000000000000000000000000000000000005")]
         destination_address: String,
 
-        #[arg(long)]
+        #[arg(long, default_value = "0x0000000000000000000000000000000000000006")]
         fee_token_address: String,
 
-        #[arg(long)]
+        #[arg(long, default_value = "0")]
         fee_amount: String,
 
-        #[arg(long)]
+        #[arg(long, default_value = "1000000")]
         required_gas_limit: u64,
 
         #[arg(long)]
