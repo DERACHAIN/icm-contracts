@@ -49,6 +49,12 @@ prepend the result with `0x` to get the final `SUBNETID_HEX`
 $ forge build
 ```
 
+## Test
+
+```sh
+$ forge test
+```
+
 ## Deploy
 
 - The ValidatorManager and Teleporter smart contracts is deployed during L1 deployment process, thus initial deployment is not necessary.
