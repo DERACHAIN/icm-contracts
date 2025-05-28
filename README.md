@@ -57,7 +57,7 @@ $ forge test
 
 ## Deploy
 
-- The ValidatorManager and Teleporter smart contracts is deployed during L1 deployment process, thus initial deployment is not necessary.
+- The ValidatorManager and Teleporter smart contracts are deployed during L1 deployment process, thus initial deployment is not necessary.
 
 ## Upgrade
 
@@ -95,7 +95,7 @@ $ cargo run -p cli -- admin proxy-info
 
 ## ValidatorManager CLI tools
 
-See the [ValidatorManager CLI documentation](./utils/validator-manager-rs/README.md) for more details.
+ValidatorManager CLI is proprietary tools developed by DERA team to interact with ValidatorManager and Teleporter smart contracts. See the [CLI documentation](./utils/validator-manager-rs/README.md) for more details.
 
 ## Docs
 
