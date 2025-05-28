@@ -1,28 +1,8 @@
 # ICM Contracts
-ValidatorManagement contracts for L1, customized by DeraChain.
+ICM smart contracts for DERA chain, including:
 
-For help getting started with building ICM contracts, refer to [the avalanche-starter-kit repository](https://github.com/ava-labs/avalanche-starter-kit).
-
-- [Setup](#setup)
-  - [Initialize the repository](#initialize-the-repository)
-  - [Dependencies](#dependencies)
-- [Structure](#structure)
-- [E2E tests](#e2e-tests)
-  - [Run specific E2E tests](#run-specific-e2e-tests)
-- [ABI Bindings](#abi-bindings)
-- [Docs](#docs)
-- [Resources](#resources)
-
-## Setup
-
-### Initialize the repository
-
-- Get all submodules: `git submodule update --init --recursive`
-
-### Dependencies
-
-- [Ginkgo](https://onsi.github.io/ginkgo/#installing-ginkgo) for running the end-to-end tests.
-- [Foundry](https://book.getfoundry.sh/) Use `./scripts/install_foundry.sh` to install the Ava Labs [fork](https://github.com/ava-labs/foundry) for building contracts.
+- ValidatorManager
+- Teleporter
 
 ## Structure
 
@@ -40,57 +20,74 @@ For help getting started with building ICM contracts, refer to [the avalanche-st
   - `abi_bindings.sh` generates ABI bindings for the contracts in `contracts/` and outputs them to `abi-bindings/`.
   - `lint.sh` performs Solidity and Golang linting.
 
-## E2E tests
+## Prerequisites
 
-In addition to the docker setup, end-to-end integration tests written using Ginkgo are provided in the `tests/` directory. E2E tests are run as part of CI, but can also be run locally. Any new features or cross-chain example applications checked into the repository should be accompanied by an end-to-end tests. See the [Contribution Guide](./CONTRIBUTING.md) for additional details.
+- [Foundry](https://book.getfoundry.sh/) Use `./scripts/install_foundry.sh` to install the Ava Labs [fork](https://github.com/ava-labs/foundry) for building contracts.
 
-To run the E2E tests locally, you'll need to install Gingko following the instructions [here](https://onsi.github.io/ginkgo/#installing-ginkgo).
+## Setup
 
-Then run the following command from the root of the repository:
+- Determine the `SUBNETID_HEX` using the ICM relayer tools (command mode)
 
-```bash
-./scripts/e2e_test.sh
+```sh
+$ ./bin/cli convertID --source-id=SUBNETID_CB58
 ```
 
-### Run specific E2E tests
+prepend the result with `0x` to get the final `SUBNETID_HEX`
 
-To run a specific E2E test, specify the environment variable `GINKGO_FOCUS`, which will then look for test descriptions that match the provided input. For example, to run the `Calculate Teleporter message IDs` test:
+>   *Note: the `SUBNETID_CB58` is retrieved using `avalanche blockchain describe` command.
 
-```bash
-GINKGO_FOCUS="Calculate Teleporter message IDs" ./scripts/e2e_test.sh
+- Create `.env` file from template and fill in necessary information.
+
+- Get all submodules: `git submodule update --init --recursive`
+
+## Compile
+
+```sh
+$ forge build
 ```
 
-A substring of the full test description can be used as well:
+## Deploy
 
-```bash
-GINKGO_FOCUS="Calculate Teleporter" ./scripts/e2e_test.sh
+- The ValidatorManager and Teleporter smart contracts is deployed during L1 deployment process, thus initial deployment is not necessary.
+
+## Upgrade
+
+- Increase monotonically the `VERSION_NUMBER` in `contracts/validator-manager/NativeTokenStakingManager.sol`
+
+```solidity
+function initialize(
+        PoSValidatorManagerSettings calldata settings
+    ) external reinitializer(<VERSION_NUMBER>) {
+        __NativeTokenStakingManager_init(settings);
+    }
 ```
 
-The E2E test script also supports a `--components` flag, making it easy to run all the test cases for a particular project. For example, to run all E2E tests for the `tests/flows/ictt/` folder:
+- Compile 
 
-```bash
-./scripts/e2e_test.sh --components "ictt"
+```sh
+$ forge clean && forge build
 ```
 
-## ABI Bindings
+- Upgrade ValidatorManager implementation
 
-The E2E tests written in Golang interface with the solidity contracts by use of generated ABI bindings. To regenerate Golang ABI bindings for the Solidity smart contracts, run:
-
-```bash
-./scripts/abi_go_bindings.sh
+```sh
+$ forge script contracts/validator-manager/scripts/UpgradeScript.s.sol \
+--rpc-url RPC_URL --broadcast -vvvv
 ```
 
-The auto-generated bindings should be written under the `abi-bindings/` directory.
+>   *Note: Should dry-run before actual deployment by omitting the `--broadcast` argument from the command*
+
+- Confirm the new implementation using `utils/validator-manager-rs` command
+
+```sh
+$ cd utils/validator-manager-rs
+$ cargo run -p cli -- admin proxy-info
+```
+
+## ValidatorManager CLI tools
+
+See the [ValidatorManager CLI documentation](./utils/validator-manager-rs/README.md) for more details.
 
 ## Docs
 
 - [ICM Protocol Overview](./contracts/teleporter/README.md)
-- [Teleporter Registry and Upgrades](./contracts/teleporter/registry/README.md)
-- [Contract Deployment](./utils/contract-deployment/README.md)
-- [Teleporter CLI](./cmd/teleporter-cli/README.md)
-
-## Resources
-
-- List of blockchain signing cryptography algorithms [here](http://ethanfast.com/top-crypto.html).
-- Background on stateful precompiles [here](https://medium.com/avalancheavax/customizing-the-evm-with-stateful-precompiles-f44a34f39efd).
-- Background on BLS signature aggregation [here](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html).
