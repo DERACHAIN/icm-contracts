@@ -5,6 +5,8 @@ ICM smart contracts for DERA chain, including:
 - Teleporter
 - ICTT (unused)
 
+The repository is forked from [Avalanche](https://github.com/ava-labs/icm-contracts)
+
 ## Structure
 
 - `contracts/`
